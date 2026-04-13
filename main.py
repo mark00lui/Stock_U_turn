@@ -1,10 +1,12 @@
 """CTA Dashboard — entry point.
 
 Usage:
-    python main.py
+    python main.py              # technical report only
+    python main.py --export     # also export JSON for multi-agent handoff
 """
 import sys
 import io
+import json
 from datetime import date
 
 # Fix Windows console encoding for CJK output
@@ -103,7 +105,24 @@ def main() -> None:
     print(f"  Signals found: {len(results)}  "
           f"(Strong {strong} / Call {medium} / Watch {watch})")
 
-    # 4. HTML report
+    # 4. Export JSON for multi-agent handoff
+    export_json = "--export" in sys.argv
+    if export_json:
+        from config import DATA_DIR
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        json_out = DATA_DIR / "signals_latest.json"
+        payload = {
+            "date": today,
+            "total_scanned": len(prices),
+            "results": results,
+        }
+        json_out.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2, default=str),
+            encoding="utf-8",
+        )
+        print(f"\n  JSON exported: {json_out}")
+
+    # 5. HTML report
     print("\n[4/4] Generating HTML report ...")
     out = generate_report(results, len(prices), today)
     print(f"\n  >>> {out}")

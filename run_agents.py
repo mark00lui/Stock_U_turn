@@ -1,20 +1,20 @@
-"""CTA Multi-Agent Dashboard — entry point.
+"""CTA Multi-Agent Dashboard — standalone entry point.
 
 Usage:
-    # Full multi-agent pipeline (requires ANTHROPIC_API_KEY)
-    python run_agents.py
+    python run_agents.py          # reads .env or env-var for API key
 
-    # Technical-only fallback (no API key needed)
-    python main.py
-
-Environment variables:
+Environment variables (or .env file):
     ANTHROPIC_API_KEY  — required for LLM agents
     CTA_MODEL          — override LLM model (default: claude-sonnet-4-6)
+
+NOTE: If you always use Claude Code CLI, you do NOT need this script.
+      Instead ask Claude Code to run the multi-agent analysis directly —
+      it uses its own auth and the .claude/agents/ definitions.
 """
 import sys
 import io
 import os
-from datetime import date
+from pathlib import Path
 
 # Fix Windows console encoding
 if sys.stdout.encoding != "utf-8":
@@ -22,7 +22,25 @@ if sys.stdout.encoding != "utf-8":
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 
+def _load_dotenv() -> None:
+    """Load .env from project root (no extra dependency needed)."""
+    env_file = Path(__file__).parent / ".env"
+    if not env_file.exists():
+        return
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip("\"'")
+        if key and key not in os.environ:      # don't overwrite existing
+            os.environ[key] = value
+
+
 def main() -> None:
+    _load_dotenv()
+
     # ── dependency check ───────────────────────────────
     missing = []
     for mod in ("yfinance", "pandas", "requests", "numpy", "anthropic"):
@@ -40,12 +58,16 @@ def main() -> None:
         print("=" * 60)
         print("  ANTHROPIC_API_KEY not set.")
         print()
-        print("  To run the full 6-agent pipeline:")
+        print("  Option A — .env file (recommended):")
+        print('    echo "ANTHROPIC_API_KEY=sk-ant-..." > .env')
+        print("    python run_agents.py")
+        print()
+        print("  Option B — env variable:")
         print("    export ANTHROPIC_API_KEY=sk-ant-...")
         print("    python run_agents.py")
         print()
-        print("  To run technical analysis only (no API needed):")
-        print("    python main.py")
+        print("  Option C — use Claude Code CLI instead (no key needed):")
+        print("    just ask Claude Code to run the multi-agent analysis")
         print("=" * 60)
         sys.exit(1)
 
