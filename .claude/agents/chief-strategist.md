@@ -8,7 +8,6 @@ allowedTools:
   - Glob
   - Grep
   - Bash
-  - Agent
   - WebSearch
   - WebFetch
 ---
@@ -62,3 +61,7 @@ allowedTools:
 - 報告輸出: `output/`
 - 台股前 1000 大 (TWSE + TPEx)
 - 核心策略: RSI/MACD 抄底反轉
+
+## Output Convention
+When invoked by the CTA Daily orchestrator, write your complete synthesis (Markdown) to:
+`E:/github/Stock_U_turn/data/agent_outputs/strategy.md`

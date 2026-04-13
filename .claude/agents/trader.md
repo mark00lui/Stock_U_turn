@@ -94,3 +94,7 @@ allowedTools:
 - 保留現金: 至少保留 20% 現金應對突發
 - 順勢操作: 抄底是等反轉確認，不是接刀子
 - 記錄一切: 沒有記錄的交易不是好交易
+
+## Output Convention
+When invoked by the CTA Daily orchestrator, write your complete trade plans (Markdown) to:
+`E:/github/Stock_U_turn/data/agent_outputs/trades.md`

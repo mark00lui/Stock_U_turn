@@ -1,59 +1,62 @@
 # Stock U-turn — CTA Trading Signal Dashboard
 
 ## Project Overview
-CTA (Commodity Trading Advisor) style trading signal dashboard for Taiwan top-1000 stocks.
-Daily HTML report with RSI/MACD bottom-reversal Call signals.
+CTA (Commodity Trading Advisor) style daily dashboard for Taiwan top-1000 stocks.
+RSI/MACD bottom-reversal Call signals + multi-agent AI analysis.
+
+## Quick Start
+
+### Tech-only (no AI, instant)
+```bash
+python main.py              # HTML report with RSI/MACD signals
+```
+
+### Full 6-Agent Analysis (recommended)
+Tell Claude Code:
+> 跑CTA
+
+Or invoke the orchestrator agent directly. This runs the complete pipeline:
+1. Data fetch + RSI/MACD signals (Python)
+2. Revenue Analyst + Industry Analyst (LLM, parallel)
+3. Chief Strategist synthesis (LLM)
+4. Trader trade plans (LLM)
+5. Enhanced HTML report generation
+
+Output: `output/cta_agent_report_YYYY-MM-DD.html`
+
+### Daily Auto-Trigger
+Tell Claude Code:
+> 設定每日CTA排程
+
+This creates a CronCreate job that runs the full pipeline **every weekday at 14:03** (30 min after Taiwan market close at 13:30). The cron job lives in the current session — re-create it when you restart Claude Code.
+
+## 6-Agent System
+
+| Agent | Type | Role | Output |
+|-------|------|------|--------|
+| Data RD | Python | TWSE/TPEx data, yfinance prices | `data/signals_latest.json` |
+| Signal Analyst | Python | RSI/MACD indicators, reversal detection | (in JSON above) |
+| Revenue Analyst | LLM | Monthly revenue & earnings analysis | `data/agent_outputs/fundamentals.md` |
+| Industry Analyst | LLM | Sector trends, cycle positioning | `data/agent_outputs/industry.md` |
+| Chief Strategist | LLM | 3D synthesis (tech 40% + fundamental 30% + industry 30%) | `data/agent_outputs/strategy.md` |
+| Trader | LLM | Trade plans, position sizing, risk control | `data/agent_outputs/trades.md` |
+
+## Key Files
+```
+main.py                     — data pipeline + --export JSON
+generate_report_cli.py      — assemble enhanced report from agent outputs
+config.py                   — all parameters (RSI/MACD/thresholds)
+report.py                   — HTML report templates (basic + enhanced)
+fetch_universe.py           — TWSE/TPEx stock list API
+fetch_prices.py             — yfinance batch download + cache
+indicators.py               — RSI & MACD calculation
+signals.py                  — reversal signal detection
+.claude/agents/cta-daily.md — orchestrator agent (runs full pipeline)
+.claude/agents/*.md         — 6 specialist agent definitions
+```
 
 ## Tech Stack
 - Python 3.x, pandas, numpy, yfinance, requests
-- Anthropic SDK (optional, for standalone multi-agent mode)
-- Self-contained static HTML reports (no web server needed)
-
-## Two Execution Modes
-
-### Mode A: Technical Analysis Only (no API key)
-```bash
-python main.py              # basic RSI/MACD dashboard
-python main.py --export     # also exports data/signals_latest.json
-```
-
-### Mode B: Multi-Agent Analysis (Claude Code native — recommended)
-When the user asks to "run the multi-agent CTA analysis", follow this workflow:
-
-1. **Data Pipeline** — run `python main.py --export` to fetch data and compute signals
-2. **Read Signals** — read `data/signals_latest.json` for the top signal stocks
-3. **Spawn 4 Agents in parallel pairs**:
-   - Use Agent tool with `.claude/agents/revenue-analyst.md` → write output to `data/agent_outputs/fundamentals.md`
-   - Use Agent tool with `.claude/agents/industry-analyst.md` → write output to `data/agent_outputs/industry.md`
-4. **Chief Strategist** — read all outputs, synthesize → write to `data/agent_outputs/strategy.md`
-5. **Trader** — read strategy, generate trade plans → write to `data/agent_outputs/trades.md`
-6. **Generate Report** — run `python generate_report_cli.py` → produces `output/cta_agent_report_*.html`
-
-### Mode C: Standalone Multi-Agent (API key required)
-```bash
-echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
-python run_agents.py
-```
-
-## 6-Agent Roles
-| Agent | Type | Role |
-|-------|------|------|
-| Data RD | Python | TWSE/TPEx data fetch, yfinance prices |
-| Signal Analyst | Python | RSI/MACD indicators, reversal detection |
-| Revenue Analyst | LLM | Monthly revenue & quarterly earnings |
-| Industry Analyst | LLM | Sector trends, cycle positioning |
-| Chief Strategist | LLM | 3D synthesis (tech 40%, fundamental 30%, industry 30%) |
-| Trader | LLM | Trade plans, position sizing, risk control |
-
-## Key Files
-- `main.py` — data pipeline + technical report
-- `run_agents.py` — standalone multi-agent (needs API key)
-- `generate_report_cli.py` — assemble enhanced report from agent output files
-- `config.py` — all parameters (RSI/MACD/thresholds)
-- `agents/orchestrator.py` — Python multi-agent pipeline
-- `.claude/agents/*.md` — Claude Code agent definitions
-
-## Development Guidelines
-- Windows 11 environment, UTF-8 encoding
-- Auto-commit enabled for development iterations
-- Main branch: `main`
+- Claude Code CLI (Agent tool for LLM agents — no API key needed)
+- Self-contained static HTML reports
+- Windows 11, UTF-8, Git Bash

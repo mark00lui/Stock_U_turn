@@ -86,3 +86,7 @@ allowedTools:
 - 不要只看新聞標題，深入分析供需基本面
 - 國際市場連動越來越強，必須關注全球產業動態
 - 搜尋時使用繁體中文 + 英文雙語以獲取更全面的資訊
+
+## Output Convention
+When invoked by the CTA Daily orchestrator, write your complete analysis (Markdown) to:
+`E:/github/Stock_U_turn/data/agent_outputs/industry.md`

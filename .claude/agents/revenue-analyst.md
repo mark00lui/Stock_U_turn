@@ -90,3 +90,7 @@ allowedTools:
 - 月營收 YoY 轉正是重要的基本面反轉訊號
 - 毛利率趨勢比絕對值更重要
 - 結合技術面抄底訊號時，營收觸底反彈的股票勝率更高
+
+## Output Convention
+When invoked by the CTA Daily orchestrator, write your complete analysis (Markdown) to:
+`E:/github/Stock_U_turn/data/agent_outputs/fundamentals.md`
