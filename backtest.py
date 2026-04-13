@@ -43,6 +43,8 @@ class Strategy:
     min_stars: int = 3                # minimum signal strength to enter
     cooldown_days: int = 5            # min days between entries on same stock
     position_pct: float = 5.0         # % of portfolio per trade
+    early_exit_days: int = 0          # if >0: exit early when gain < early_exit_min after N days
+    early_exit_min_pct: float = 3.0   # minimum gain% required to stay after early_exit_days
 
 
 # ── Trade record ───────────────────────────────────────
@@ -213,6 +215,7 @@ class BacktestEngine:
                 if np.isnan(price) or price <= 0:
                     continue
                 pct = (price / entry_price - 1) * 100
+                days_held = j - i
 
                 if pct <= self.strat.stop_loss_pct:
                     exit_price = price
@@ -222,6 +225,13 @@ class BacktestEngine:
                 elif pct >= self.strat.target_pct:
                     exit_price = price
                     exit_reason = "達標"
+                    exit_j = j
+                    break
+                elif (self.strat.early_exit_days > 0
+                      and days_held >= self.strat.early_exit_days
+                      and pct < self.strat.early_exit_min_pct):
+                    exit_price = price
+                    exit_reason = "早期出場"
                     exit_j = j
                     break
 
@@ -319,7 +329,7 @@ def compute_metrics(trades: list[Trade], position_pct: float = 5.0) -> Metrics:
     m.max_consec_losses = max_l
 
     # by exit reason
-    for reason in ("停損", "達標", "到期"):
+    for reason in ("停損", "達標", "到期", "早期出場"):
         subset = [t.pnl_pct for t in closed if t.exit_reason == reason]
         if subset:
             m.by_reason[reason] = {
@@ -554,6 +564,9 @@ def main() -> tuple[list[Trade], Metrics, Strategy]:
     parser.add_argument("--stop-loss", type=float, default=-7.0)
     parser.add_argument("--target", type=float, default=10.0)
     parser.add_argument("--max-hold", type=int, default=20)
+    parser.add_argument("--position", type=float, default=5.0)
+    parser.add_argument("--early-exit-days", type=int, default=0)
+    parser.add_argument("--early-exit-min", type=float, default=3.0)
     args = parser.parse_args()
 
     strat = Strategy(
@@ -561,6 +574,9 @@ def main() -> tuple[list[Trade], Metrics, Strategy]:
         target_pct=args.target,
         max_hold_days=args.max_hold,
         min_stars=args.min_stars,
+        position_pct=args.position,
+        early_exit_days=args.early_exit_days,
+        early_exit_min_pct=args.early_exit_min,
     )
 
     today = date.today().isoformat()
