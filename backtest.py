@@ -622,6 +622,10 @@ def main() -> tuple[list[Trade], Metrics, Strategy]:
     out = generate_backtest_report(trades, metrics, strat, today)
     print(f"\n  >>> {out}")
 
+    # refresh landing index
+    from update_index import main as refresh_index
+    refresh_index()
+
     # also export JSON for agent analysis
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     bt_json = DATA_DIR / "backtest_latest.json"

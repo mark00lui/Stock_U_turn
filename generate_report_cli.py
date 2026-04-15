@@ -44,6 +44,10 @@ def main() -> None:
     )
     print(f"Enhanced report: {out}")
 
+    # refresh the GitHub Pages landing index
+    from update_index import main as refresh_index
+    refresh_index()
+
 
 if __name__ == "__main__":
     main()

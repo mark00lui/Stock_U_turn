@@ -128,6 +128,10 @@ def main() -> None:
     print(f"\n  >>> {out}")
     print("  Open the file in a browser to view the dashboard.")
 
+    # refresh landing index
+    from update_index import main as refresh_index
+    refresh_index()
+
 
 if __name__ == "__main__":
     main()

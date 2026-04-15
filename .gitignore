@@ -1,5 +1,4 @@
 data/
-output/
 __pycache__/
 *.pyc
 *.pyo
@@ -8,3 +7,10 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+
+# Keep generated HTML reports tracked so they can be published via GitHub Pages
+!output/
+output/**/.gitkeep
+
+# Claude Code internal state
+.claude/scheduled_tasks.lock

@@ -22,7 +22,14 @@ Or invoke the orchestrator agent directly. This runs the complete pipeline:
 4. Trader trade plans (LLM)
 5. Enhanced HTML report generation
 
-Output: `output/cta_agent_report_YYYY-MM-DD.html`
+Output: `output/cta_agent_report_YYYY-MM-DD.html` (also auto-refreshes `output/index.html`)
+
+### GitHub Pages Publishing
+The `output/` directory is tracked in git so reports can be published via GitHub Pages:
+1. Enable in GitHub: **Settings → Pages → Source: Deploy from branch, main, /output**
+2. Visit `https://<user>.github.io/<repo>/` — `output/index.html` is the landing page
+3. Every report generation calls `update_index.py` so the archive stays fresh
+4. Commit & push `output/` files to publish
 
 ### Daily Auto-Trigger
 Tell Claude Code:
@@ -45,12 +52,15 @@ This creates a CronCreate job that runs the full pipeline **every weekday at 14:
 ```
 main.py                     — data pipeline + --export JSON
 generate_report_cli.py      — assemble enhanced report from agent outputs
+backtest.py                 — historical strategy backtesting engine
+update_index.py             — refresh output/index.html (GitHub Pages landing)
 config.py                   — all parameters (RSI/MACD/thresholds)
 report.py                   — HTML report templates (basic + enhanced)
 fetch_universe.py           — TWSE/TPEx stock list API
 fetch_prices.py             — yfinance batch download + cache
 indicators.py               — RSI & MACD calculation
 signals.py                  — reversal signal detection
+output/                     — generated HTML reports (tracked, for GitHub Pages)
 .claude/agents/cta-daily.md — orchestrator agent (runs full pipeline)
 .claude/agents/*.md         — 6 specialist agent definitions
 ```

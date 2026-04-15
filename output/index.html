@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stock U-turn — CTA Dashboard Archive</title>
+<style>
+:root{--bg:#0d1117;--sf:#161b22;--sf2:#21262d;--bd:#30363d;
+  --t1:#e6edf3;--t2:#8b949e;--gr:#3fb950;--bl:#58a6ff;--yw:#d29922;--rd:#f85149}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--t1);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:14px;line-height:1.6;min-height:100vh}
+.wrap{max-width:900px;margin:0 auto;padding:40px 24px}
+header{text-align:center;margin-bottom:40px}
+h1{font-size:32px;font-weight:700;
+  background:linear-gradient(135deg,var(--gr),var(--bl));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.sub{color:var(--t2);font-size:15px}
+.tag{display:inline-block;background:var(--sf2);border:1px solid var(--bd);
+  color:var(--t2);font-size:12px;padding:3px 10px;border-radius:12px;margin:0 4px}
+.tag.new{border-color:var(--gr);color:var(--gr)}
+section{margin-bottom:32px}
+h2{font-size:18px;color:var(--t1);padding-bottom:10px;border-bottom:1px solid var(--bd);margin-bottom:16px}
+h2 .count{color:var(--t2);font-size:13px;font-weight:400;margin-left:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+a.card{display:block;background:var(--sf);border:1px solid var(--bd);border-radius:12px;
+  padding:16px 20px;text-decoration:none;color:var(--t1);transition:all .15s}
+a.card:hover{border-color:var(--bl);background:var(--sf2);transform:translateY(-1px)}
+.card-title{font-size:15px;font-weight:600}
+.card-date{color:var(--t2);font-size:12px}
+.card-type{display:inline-block;font-size:11px;padding:2px 8px;border-radius:8px;
+  background:rgba(88,166,255,.15);color:var(--bl);margin-left:8px;vertical-align:middle}
+.card-type.agent{background:rgba(63,185,80,.15);color:var(--gr)}
+.card-type.backtest{background:rgba(210,153,34,.15);color:var(--yw)}
+.info{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:20px;
+  margin-top:16px;color:var(--t2);font-size:13px;line-height:1.7}
+.info strong{color:var(--t1)}
+.info code{background:var(--sf2);padding:2px 8px;border-radius:4px;font-size:12px;color:var(--gr)}
+footer{text-align:center;color:var(--t2);font-size:12px;margin-top:40px;padding-top:16px;border-top:1px solid var(--bd)}
+footer a{color:var(--bl);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>CTA Dashboard Archive</h1>
+  <p class="sub">台股 RSI / MACD 抄底反轉訊號 &middot; 多 Agent AI 分析</p>
+  <div style="margin-top:10px">
+    <span class="tag">台股前 1000 大</span>
+    <span class="tag">RSI(14) / MACD(12,26,9)</span>
+    <span class="tag new">6-Agent System</span>
+  </div>
+</header>
+
+<section>
+<h2>📊 每日 AI 分析報告 <span class="count">6-Agent · 基本面+行業+策略+交易</span></h2>
+<div class="grid">
+  <a class="card" href="cta_agent_report_2026-04-15.html"><div class="card-title">2026-04-15<span class="card-type agent">Agent</span></div><div class="card-date">&nbsp;</div></a>
+  <a class="card" href="cta_agent_report_2026-04-14.html"><div class="card-title">2026-04-14<span class="card-type agent">Agent</span></div><div class="card-date">&nbsp;</div></a>
+  <a class="card" href="cta_agent_report_2026-04-13.html"><div class="card-title">2026-04-13<span class="card-type agent">Agent</span></div><div class="card-date">&nbsp;</div></a>
+</div>
+</section>
+<section>
+<h2>⚡ 純技術面快速報告 <span class="count">RSI / MACD 訊號掃描</span></h2>
+<div class="grid">
+  <a class="card" href="cta_report_2026-04-15.html"><div class="card-title">2026-04-15<span class="card-type ">Tech</span></div><div class="card-date">&nbsp;</div></a>
+  <a class="card" href="cta_report_2026-04-14.html"><div class="card-title">2026-04-14<span class="card-type ">Tech</span></div><div class="card-date">&nbsp;</div></a>
+  <a class="card" href="cta_report_2026-04-13.html"><div class="card-title">2026-04-13<span class="card-type ">Tech</span></div><div class="card-date">&nbsp;</div></a>
+</div>
+</section>
+<section>
+<h2>📈 策略回測報告 <span class="count">歷史數據驗證</span></h2>
+<div class="grid">
+  <a class="card" href="cta_backtest_2026-04-13.html"><div class="card-title">2026-04-13<span class="card-type backtest">Backtest</span></div><div class="card-date">&nbsp;</div></a>
+</div>
+</section>
+
+
+<section>
+<div class="info">
+  <strong>自動更新機制</strong> · 本 Dashboard 由 Claude Code CLI 每個交易日 14:03 自動觸發，
+  經過 6 Agent Pipeline 產出。<br><br>
+  <strong>報告結構</strong><br>
+  &nbsp;&middot; <strong>Agent 報告</strong> — 6 代理 AI 整合分析（基本面 + 行業 + 策略 + 交易計畫）<br>
+  &nbsp;&middot; <strong>Tech 報告</strong> — 純 RSI/MACD 訊號表，不含 AI 分析<br>
+  &nbsp;&middot; <strong>Backtest 報告</strong> — 策略歷史回測結果<br>
+  <br>
+  <strong>策略規則</strong> · 停損 <code>-8%</code> · 目標 <code>+10%</code> · 最長持有 <code>15 日</code>
+  · 早期出場 <code>10日內漲幅&lt;3%</code> · 單筆倉位 <code>5%</code>
+</div>
+</section>
+
+<footer>Generated by Claude Code &middot; Stock U-turn CTA Dashboard</footer>
+
+</div>
+</body>
+</html>
