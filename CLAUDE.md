@@ -31,11 +31,19 @@ The `output/` directory is tracked in git so reports can be published via GitHub
 3. Every report generation calls `update_index.py` so the archive stays fresh
 4. Commit & push `output/` files to publish
 
-### Daily Auto-Trigger
-Tell Claude Code:
-> 設定每日CTA排程
+### Daily Auto-Trigger (self-renewing chain)
+The project runs on a **two-cron chain** that auto-refreshes itself so 7-day expiry never catches up:
 
-This creates a CronCreate job that runs the full pipeline **every weekday at 14:03** (30 min after Taiwan market close at 13:30). The cron job lives in the current session — re-create it when you restart Claude Code.
+| Cron | Schedule | Role |
+|------|----------|------|
+| **Main** (`RUN_CTA_DAILY_V2`) | Weekdays 14:03 | Runs the full CTA pipeline (data → 4 agents → backtest → MD → git push) |
+| **Renewer** (`RUN_CTA_RENEWER_V2`) | Daily 10:07 | Reads `cron_config.json`, deletes both crons, recreates them fresh |
+
+Each day at 10:07 the renewer fires and both crons get a fresh 7-day window. Result: the schedule runs **indefinitely** as long as Claude Code CLI stays open.
+
+**Limitation**: If you close Claude Code CLI, both crons die. After restarting, ask Claude to "rebuild CTA crons" — it will re-read `cron_config.json` and recreate both jobs.
+
+**Editing schedule or prompts**: Edit `cron_config.json`. Changes apply after the next renewer fire (or ask Claude to rebuild immediately).
 
 ## 6-Agent System
 
