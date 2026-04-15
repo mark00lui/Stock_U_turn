@@ -89,7 +89,7 @@ Use the Agent tool. In the prompt, include:
 
 ## Step 6: Generate Enhanced Report
 
-Run the report assembly script:
+Run the report assembly script (this also refreshes `output/index.html`):
 
 ```bash
 cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python generate_report_cli.py
@@ -101,7 +101,23 @@ Then open the report in the default browser:
 start "" "E:/github/Stock_U_turn/output/cta_agent_report_$(date +%Y-%m-%d).html"
 ```
 
-## Step 7: Summary
+## Step 7: Auto-Publish to GitHub Pages
+
+Commit today's new report(s) and push to GitHub so they appear on the public archive:
+
+```bash
+cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python publish.py
+```
+
+This:
+- Stages only `output/` (source-code changes stay separate)
+- Commits with message `report: CTA daily YYYY-MM-DD`
+- Pushes to `origin main`
+- Skips gracefully if no report changes
+
+If push fails (auth/network), the commit is preserved locally. Report the error but don't retry automatically.
+
+## Step 8: Summary
 
 Report completion with:
 - Date of analysis
@@ -109,3 +125,4 @@ Report completion with:
 - Number of signals found (Strong / Call / Watch)
 - Top 3 picks with scores
 - Report file path
+- GitHub Pages URL: `https://mark00lui.github.io/Stock_U_turn/`
