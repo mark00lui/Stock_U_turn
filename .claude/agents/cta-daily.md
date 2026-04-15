@@ -87,42 +87,44 @@ Use the Agent tool. In the prompt, include:
 - Instruct the agent to generate trade plans with entry/stop-loss/target/position sizing for each pick
 - Instruct the agent to write its COMPLETE output in Traditional Chinese to: `E:/github/Stock_U_turn/data/agent_outputs/trades.md`
 
-## Step 6: Generate Enhanced Report
+## Step 6: Run Backtest with Current Data
 
-Run the report assembly script (this also refreshes `output/index.html`):
-
-```bash
-cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python generate_report_cli.py
-```
-
-Then open the report in the default browser:
+Validate the strategy against the latest prices:
 
 ```bash
-start "" "E:/github/Stock_U_turn/output/cta_agent_report_$(date +%Y-%m-%d).html"
+cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python backtest.py --stop-loss -8 --target 10 --max-hold 15 --position 5 --early-exit-days 10 --early-exit-min 3
 ```
 
-## Step 7: Auto-Publish to GitHub Pages
+This produces `data/backtest_latest.json` (metrics snapshot) that feeds into the daily MD report.
 
-Commit today's new report(s) and push to GitHub so they appear on the public archive:
+## Step 7: Generate Combined Daily Markdown Report
+
+Assemble the full report — analysis + trade list + backtest — into one GitHub-friendly `.md`:
+
+```bash
+cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python generate_daily_md.py
+```
+
+Output: `output/cta_daily_YYYY-MM-DD.md` — this is the primary daily artifact.
+The script also refreshes `output/README.md` (archive index) and `output/index.html` (GitHub Pages landing).
+
+## Step 8: Auto-Publish to GitHub
+
+Commit today's new reports and push so they appear publicly:
 
 ```bash
 cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python publish.py
 ```
 
-This:
-- Stages only `output/` (source-code changes stay separate)
-- Commits with message `report: CTA daily YYYY-MM-DD`
-- Pushes to `origin main`
-- Skips gracefully if no report changes
+Stages only `output/`, commits with `report: CTA daily YYYY-MM-DD`, pushes to `origin main`.
+Skips gracefully if no changes. On push failure, commit is preserved locally — report the error but do NOT retry.
 
-If push fails (auth/network), the commit is preserved locally. Report the error but don't retry automatically.
-
-## Step 8: Summary
+## Step 9: Summary
 
 Report completion with:
 - Date of analysis
-- Number of stocks scanned
-- Number of signals found (Strong / Call / Watch)
-- Top 3 picks with scores
-- Report file path
-- GitHub Pages URL: `https://mark00lui.github.io/Stock_U_turn/`
+- Number of stocks scanned + signal breakdown (Strong / Call / Watch)
+- Top 3 picks with combined scores
+- Backtest headline (win rate, profit factor)
+- Direct link to today's MD report: `https://github.com/mark00lui/Stock_U_turn/blob/main/output/cta_daily_YYYY-MM-DD.md`
+- GitHub Pages archive: `https://mark00lui.github.io/Stock_U_turn/`

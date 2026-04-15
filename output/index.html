@@ -34,6 +34,7 @@ a.card:hover{border-color:var(--bl);background:var(--sf2);transform:translateY(-
   background:rgba(88,166,255,.15);color:var(--bl);margin-left:8px;vertical-align:middle}
 .card-type.agent{background:rgba(63,185,80,.15);color:var(--gr)}
 .card-type.backtest{background:rgba(210,153,34,.15);color:var(--yw)}
+.card-type.md{background:rgba(248,81,73,.15);color:var(--rd)}
 .info{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:20px;
   margin-top:16px;color:var(--t2);font-size:13px;line-height:1.7}
 .info strong{color:var(--t1)}
@@ -56,7 +57,13 @@ footer a{color:var(--bl);text-decoration:none}
 </header>
 
 <section>
-<h2>📊 每日 AI 分析報告 <span class="count">6-Agent · 基本面+行業+策略+交易</span></h2>
+<h2>📝 每日綜合報告 (Markdown) <span class="count">基本面 + 行業 + 策略 + 交易 + 回測</span></h2>
+<div class="grid">
+  <a class="card" href="cta_daily_2026-04-15.md"><div class="card-title">2026-04-15<span class="card-type md">Daily MD</span></div><div class="card-date">&nbsp;</div></a>
+</div>
+</section>
+<section>
+<h2>🤖 6-Agent HTML 報告 <span class="count">互動式分析儀表板</span></h2>
 <div class="grid">
   <a class="card" href="cta_agent_report_2026-04-15.html"><div class="card-title">2026-04-15<span class="card-type agent">Agent</span></div><div class="card-date">&nbsp;</div></a>
   <a class="card" href="cta_agent_report_2026-04-14.html"><div class="card-title">2026-04-14<span class="card-type agent">Agent</span></div><div class="card-date">&nbsp;</div></a>
@@ -74,6 +81,7 @@ footer a{color:var(--bl);text-decoration:none}
 <section>
 <h2>📈 策略回測報告 <span class="count">歷史數據驗證</span></h2>
 <div class="grid">
+  <a class="card" href="cta_backtest_2026-04-15.html"><div class="card-title">2026-04-15<span class="card-type backtest">Backtest</span></div><div class="card-date">&nbsp;</div></a>
   <a class="card" href="cta_backtest_2026-04-13.html"><div class="card-title">2026-04-13<span class="card-type backtest">Backtest</span></div><div class="card-date">&nbsp;</div></a>
 </div>
 </section>

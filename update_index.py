@@ -19,6 +19,7 @@ from config import OUTPUT_DIR
 
 
 _PATTERNS = {
+    "daily_md": re.compile(r"cta_daily_(\d{4}-\d{2}-\d{2})\.md"),
     "agent":    re.compile(r"cta_agent_report_(\d{4}-\d{2}-\d{2})\.html"),
     "tech":     re.compile(r"cta_report_(\d{4}-\d{2}-\d{2})\.html"),
     "backtest": re.compile(r"cta_backtest_(\d{4}-\d{2}-\d{2})\.html"),
@@ -28,8 +29,8 @@ _PATTERNS = {
 def _collect() -> dict[str, list[tuple[str, str]]]:
     """Return {category: [(date, filename), ...]} sorted desc by date."""
     out = {k: [] for k in _PATTERNS}
-    for f in OUTPUT_DIR.glob("*.html"):
-        if f.name == "index.html":
+    for f in list(OUTPUT_DIR.glob("*.html")) + list(OUTPUT_DIR.glob("*.md")):
+        if f.name in ("index.html", "README.md"):
             continue
         for cat, pat in _PATTERNS.items():
             m = pat.match(f.name)
@@ -63,23 +64,127 @@ def _section(title: str, subtitle: str, cards: list[str]) -> str:
     )
 
 
+def _md_readme(reports: dict[str, list[tuple[str, str]]]) -> str:
+    """Build output/README.md — GitHub auto-renders this when browsing the folder."""
+    lines = [
+        "# 📊 CTA Daily Reports",
+        "",
+        "台股前 1000 大 · RSI / MACD 抄底反轉訊號 · 6-Agent AI 每日分析",
+        "",
+        "> 🌐 [Live Dashboard](https://mark00lui.github.io/Stock_U_turn/) · "
+        "📁 [Source Code](https://github.com/mark00lui/Stock_U_turn) · "
+        "🤖 Powered by Claude Code",
+        "",
+        "---",
+        "",
+        "## 📝 每日綜合報告 (Markdown)",
+        "",
+        "一份涵蓋技術面訊號、基本面、行業分析、策略整合、操作股單、回測驗證的完整報告。",
+        "",
+    ]
+
+    if reports["daily_md"]:
+        for d, fn in reports["daily_md"]:
+            lines.append(f"- 📊 [`{d}`](./{fn})")
+        lines.append("")
+    else:
+        lines.append("_尚無每日 Markdown 報告_")
+        lines.append("")
+
+    lines.append("---")
+    lines.append("")
+    lines.append("## 🗂️ HTML 互動式報告")
+    lines.append("")
+
+    if reports["agent"]:
+        lines.append("### 6-Agent 整合分析")
+        for d, fn in reports["agent"]:
+            lines.append(f"- 🤖 [`{d}`](./{fn})")
+        lines.append("")
+
+    if reports["tech"]:
+        lines.append("### 純技術面掃描")
+        for d, fn in reports["tech"]:
+            lines.append(f"- ⚡ [`{d}`](./{fn})")
+        lines.append("")
+
+    if reports["backtest"]:
+        lines.append("### 策略回測報告")
+        for d, fn in reports["backtest"]:
+            lines.append(f"- 📈 [`{d}`](./{fn})")
+        lines.append("")
+
+    lines.extend([
+        "---",
+        "",
+        "## ⚙️ 策略規則",
+        "",
+        "| 參數 | 數值 |",
+        "|------|------|",
+        "| 停損 | `-8%` |",
+        "| 目標 | `+10%` |",
+        "| 最長持有 | `15 交易日` |",
+        "| 早期出場 | `10 日內漲幅 < +3%` |",
+        "| 單筆倉位 | `5%` of portfolio |",
+        "| 最低訊號強度 | `★3` |",
+        "",
+        "## 🤖 6-Agent 流程",
+        "",
+        "```",
+        "Data RD (Python)",
+        "    └─> Signal Analyst (Python)",
+        "            ├─> Revenue Analyst (LLM)  ─┐",
+        "            └─> Industry Analyst (LLM) ─┤",
+        "                                        ├─> Chief Strategist (LLM)",
+        "                                        │       └─> Trader (LLM)",
+        "                                        │               └─> Backtest Engine",
+        "                                        │                       └─> Combined MD Report",
+        "                                        │                               └─> GitHub Publish",
+        "```",
+        "",
+        "## ⚠️ 免責聲明",
+        "",
+        "本報告由 AI 自動生成，僅供研究參考，**不構成任何投資建議**。",
+        "過去回測績效不代表未來表現，投資前請獨立判斷並自行承擔風險。",
+        "",
+    ])
+    return "\n".join(lines)
+
+
 def main() -> None:
     reports = _collect()
 
+    # ── HTML index (GitHub Pages) ─────────────────────
     agent_cards    = [_card(d, f, "agent")    for d, f in reports["agent"]]
     tech_cards     = [_card(d, f, "tech")     for d, f in reports["tech"]]
     backtest_cards = [_card(d, f, "backtest") for d, f in reports["backtest"]]
 
+    # MD reports linked via HTML too (new section)
+    md_cards = [
+        f'  <a class="card" href="{fn}">'
+        f'<div class="card-title">{d}'
+        f'<span class="card-type md">Daily MD</span></div>'
+        f'<div class="card-date">&nbsp;</div></a>'
+        for d, fn in reports["daily_md"]
+    ]
+
     sections = (
-        _section("📊 每日 AI 分析報告", "6-Agent · 基本面+行業+策略+交易", agent_cards)
+        _section("📝 每日綜合報告 (Markdown)", "基本面 + 行業 + 策略 + 交易 + 回測", md_cards)
+        + _section("🤖 6-Agent HTML 報告", "互動式分析儀表板", agent_cards)
         + _section("⚡ 純技術面快速報告", "RSI / MACD 訊號掃描", tech_cards)
         + _section("📈 策略回測報告", "歷史數據驗證", backtest_cards)
     )
 
     html = _TMPL.format(sections=sections)
-    out = OUTPUT_DIR / "index.html"
-    out.write_text(html, encoding="utf-8")
-    print(f"Index updated: {out}  ({sum(len(v) for v in reports.values())} reports)")
+    idx_html = OUTPUT_DIR / "index.html"
+    idx_html.write_text(html, encoding="utf-8")
+
+    # ── README.md (GitHub browse view) ────────────────
+    readme = OUTPUT_DIR / "README.md"
+    readme.write_text(_md_readme(reports), encoding="utf-8")
+
+    total = sum(len(v) for v in reports.values())
+    print(f"Archive refreshed: {idx_html.name} + {readme.name}  ({total} reports)")
 
 
 _TMPL = r"""<!DOCTYPE html>
@@ -118,6 +223,7 @@ a.card:hover{{border-color:var(--bl);background:var(--sf2);transform:translateY(
   background:rgba(88,166,255,.15);color:var(--bl);margin-left:8px;vertical-align:middle}}
 .card-type.agent{{background:rgba(63,185,80,.15);color:var(--gr)}}
 .card-type.backtest{{background:rgba(210,153,34,.15);color:var(--yw)}}
+.card-type.md{{background:rgba(248,81,73,.15);color:var(--rd)}}
 .info{{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:20px;
   margin-top:16px;color:var(--t2);font-size:13px;line-height:1.7}}
 .info strong{{color:var(--t1)}}
