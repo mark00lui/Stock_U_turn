@@ -55,7 +55,7 @@ def _top_signals_table(results: list[dict], limit: int = 15) -> str:
     return "\n".join(lines)
 
 
-def _backtest_section(bt: dict | None) -> str:
+def _backtest_section(bt: dict | None, title: str = "") -> str:
     if not bt:
         return "_尚無回測資料。執行 `python backtest.py` 產生。_"
 
@@ -68,7 +68,11 @@ def _backtest_section(bt: dict | None) -> str:
 
     out: list[str] = []
 
-    out.append("### 📋 策略參數")
+    if title:
+        out.append(f"### {title}")
+        out.append("")
+
+    out.append("#### 📋 策略參數")
     out.append("")
     out.append(f"- **停損**: `{s['stop_loss_pct']}%`")
     out.append(f"- **目標**: `+{s['target_pct']}%`")
@@ -82,7 +86,7 @@ def _backtest_section(bt: dict | None) -> str:
     out.append(f"- **最低訊號強度**: `{s['min_stars']}★`")
     out.append("")
 
-    out.append("### 🎯 績效指標")
+    out.append("#### 🎯 績效指標")
     out.append("")
     out.append("| 指標 | 數值 |")
     out.append("|------|------|")
@@ -102,7 +106,7 @@ def _backtest_section(bt: dict | None) -> str:
     out.append("")
 
     if m.get("by_reason"):
-        out.append("### 📊 出場原因分解")
+        out.append("#### 📊 出場原因分解")
         out.append("")
         out.append("| 出場原因 | 筆數 | 平均盈虧 | 累計盈虧 |")
         out.append("|----------|------|----------|----------|")
@@ -114,7 +118,7 @@ def _backtest_section(bt: dict | None) -> str:
         out.append("")
 
     if m.get("by_stars"):
-        out.append("### ⭐ 訊號強度表現")
+        out.append("#### ⭐ 訊號強度表現")
         out.append("")
         out.append("| 星等 | 筆數 | 勝率 | 平均盈虧 |")
         out.append("|------|------|------|----------|")
@@ -127,7 +131,7 @@ def _backtest_section(bt: dict | None) -> str:
         out.append("")
 
     if m.get("monthly"):
-        out.append("### 📅 月度累計 P&L")
+        out.append("#### 📅 月度累計 P&L")
         out.append("")
         out.append("| 月份 | 累計盈虧 |")
         out.append("|------|----------|")
@@ -135,6 +139,61 @@ def _backtest_section(bt: dict | None) -> str:
             pnl = m["monthly"][month]
             emoji = "🟢" if pnl >= 0 else "🔴"
             out.append(f"| {month} | {emoji} {pnl:+.1f}% |")
+        out.append("")
+
+    return "\n".join(out)
+
+
+def _trade_log_section(bt: dict | None, title: str = "", recent_n: int = 30) -> str:
+    """Render trade log table: all open positions + last N closed trades."""
+    if not bt or not bt.get("trades"):
+        return ""
+
+    all_trades = bt["trades"]
+    holding = [t for t in all_trades if t.get("exit_reason") == "持倉中"]
+    closed = [t for t in all_trades if t.get("exit_reason") != "持倉中"]
+    recent_closed = closed[-recent_n:] if len(closed) > recent_n else closed
+
+    out: list[str] = []
+    if title:
+        out.append(f"### {title}")
+        out.append("")
+
+    # Open positions first
+    if holding:
+        out.append(f"#### 持倉中 ({len(holding)} 筆)")
+        out.append("")
+        out.append("| 代號 | 名稱 | 星等 | 進場日 | 進場價 | 現價 | 損益% | 持有天數 | 訊號描述 |")
+        out.append("|------|------|------|--------|--------|------|-------|----------|----------|")
+        for t in holding:
+            stars = "★" * t.get("signal_stars", 0)
+            pnl = t.get("pnl_pct", 0)
+            pnl_str = f"🟢 {pnl:+.2f}%" if pnl >= 0 else f"🔴 {pnl:+.2f}%"
+            sigs = " / ".join(t.get("signal_descs", []))
+            out.append(
+                f'| `{t["code"]}` | {t["name"]} | {stars} | '
+                f'{t["entry_date"]} | {t["entry_price"]:.2f} | '
+                f'{t.get("exit_price", 0):.2f} | {pnl_str} | '
+                f'{t.get("holding_days", 0)}d | {sigs} |'
+            )
+        out.append("")
+
+    # Recent closed trades
+    if recent_closed:
+        out.append(f"#### 近期已平倉 (最近 {len(recent_closed)} 筆 / 共 {len(closed)} 筆)")
+        out.append("")
+        out.append("| 代號 | 名稱 | 星等 | 進場日 | 進場價 | 出場日 | 出場價 | 損益% | 天數 | 原因 |")
+        out.append("|------|------|------|--------|--------|--------|--------|-------|------|------|")
+        for t in recent_closed:
+            stars = "★" * t.get("signal_stars", 0)
+            pnl = t.get("pnl_pct", 0)
+            pnl_str = f"🟢 {pnl:+.2f}%" if pnl >= 0 else f"🔴 {pnl:+.2f}%"
+            out.append(
+                f'| `{t["code"]}` | {t["name"]} | {stars} | '
+                f'{t["entry_date"]} | {t["entry_price"]:.2f} | '
+                f'{t.get("exit_date", "")} | {t.get("exit_price", 0):.2f} | '
+                f'{pnl_str} | {t.get("holding_days", 0)}d | {t.get("exit_reason", "")} |'
+            )
         out.append("")
 
     return "\n".join(out)
@@ -164,6 +223,14 @@ def generate(date_str: str) -> Path:
 
     bt_file = DATA_DIR / "backtest_latest.json"
     bt = json.loads(bt_file.read_text(encoding="utf-8")) if bt_file.exists() else None
+
+    bt_mom_file = DATA_DIR / "backtest_momentum.json"
+    bt_mom = json.loads(bt_mom_file.read_text(encoding="utf-8")) if bt_mom_file.exists() else None
+
+    bt_man_file = DATA_DIR / "backtest_manual.json"
+    bt_man = json.loads(bt_man_file.read_text(encoding="utf-8")) if bt_man_file.exists() else None
+
+    has_dual = bt_mom is not None or bt_man is not None
 
     # ── Compose ───────────────────────────────────────
     p: list[str] = []
@@ -244,13 +311,47 @@ def generate(date_str: str) -> Path:
 
     p.append("## 📈 策略回測驗證")
     p.append("")
-    p.append(_backtest_section(bt))
-    p.append("")
+
+    if has_dual:
+        # Dual strategy mode
+        if bt_mom:
+            p.append(_backtest_section(
+                bt_mom, "🚀 動能方案 (Momentum Strategy)"))
+            p.append("")
+        if bt_man:
+            p.append(_backtest_section(
+                bt_man, "🎯 手動精選方案 (Manual Strategy J)"))
+            p.append("")
+    else:
+        p.append(_backtest_section(bt))
+        p.append("")
 
     if bt_comment:
         p.append("### 💬 操盤手回測評析")
         p.append("")
         p.append(bt_comment)
+        p.append("")
+
+    # Trade logs (at end of report)
+    if has_dual:
+        p.append("---")
+        p.append("")
+        p.append("## 📋 回測交易進出明細")
+        p.append("")
+        if bt_mom:
+            p.append(_trade_log_section(
+                bt_mom, "🚀 動能方案 — 交易紀錄"))
+            p.append("")
+        if bt_man:
+            p.append(_trade_log_section(
+                bt_man, "🎯 手動精選方案 — 交易紀錄"))
+            p.append("")
+    elif bt:
+        p.append("---")
+        p.append("")
+        p.append("## 📋 回測交易進出明細")
+        p.append("")
+        p.append(_trade_log_section(bt, "交易紀錄"))
         p.append("")
 
     p.append("---")

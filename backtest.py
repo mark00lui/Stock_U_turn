@@ -567,6 +567,8 @@ def main() -> tuple[list[Trade], Metrics, Strategy]:
     parser.add_argument("--position", type=float, default=5.0)
     parser.add_argument("--early-exit-days", type=int, default=0)
     parser.add_argument("--early-exit-min", type=float, default=3.0)
+    parser.add_argument("--label", type=str, default="",
+                        help="Label for output files (e.g. 'momentum', 'manual')")
     args = parser.parse_args()
 
     strat = Strategy(
@@ -578,6 +580,7 @@ def main() -> tuple[list[Trade], Metrics, Strategy]:
         early_exit_days=args.early_exit_days,
         early_exit_min_pct=args.early_exit_min,
     )
+    label = args.label
 
     today = date.today().isoformat()
     print("=" * 60)
@@ -628,9 +631,11 @@ def main() -> tuple[list[Trade], Metrics, Strategy]:
 
     # also export JSON for agent analysis
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    bt_json = DATA_DIR / "backtest_latest.json"
+    suffix = f"_{label}" if label else "_latest"
+    bt_json = DATA_DIR / f"backtest{suffix}.json"
     export = {
         "date": today,
+        "label": label,
         "strategy": asdict(strat),
         "metrics": {
             "total_trades": metrics.total_trades,
@@ -649,7 +654,7 @@ def main() -> tuple[list[Trade], Metrics, Strategy]:
             "by_stars": metrics.by_stars,
             "monthly": {k: round(v["total_pnl"], 2) for k, v in metrics.monthly.items()},
         },
-        "sample_trades": [asdict(t) for t in closed[:50]],
+        "trades": [asdict(t) for t in trades],
     }
     bt_json.write_text(json.dumps(export, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
 
