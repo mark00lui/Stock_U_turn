@@ -230,7 +230,10 @@ def generate(date_str: str) -> Path:
     bt_man_file = DATA_DIR / "backtest_manual.json"
     bt_man = json.loads(bt_man_file.read_text(encoding="utf-8")) if bt_man_file.exists() else None
 
-    has_dual = bt_mom is not None or bt_man is not None
+    bt_ofc_file = DATA_DIR / "backtest_office.json"
+    bt_ofc = json.loads(bt_ofc_file.read_text(encoding="utf-8")) if bt_ofc_file.exists() else None
+
+    has_multi = bt_mom is not None or bt_man is not None or bt_ofc is not None
 
     # ── Compose ───────────────────────────────────────
     p: list[str] = []
@@ -312,8 +315,7 @@ def generate(date_str: str) -> Path:
     p.append("## 📈 策略回測驗證")
     p.append("")
 
-    if has_dual:
-        # Dual strategy mode
+    if has_multi:
         if bt_mom:
             p.append(_backtest_section(
                 bt_mom, "🚀 動能方案 (Momentum Strategy)"))
@@ -321,6 +323,11 @@ def generate(date_str: str) -> Path:
         if bt_man:
             p.append(_backtest_section(
                 bt_man, "🎯 手動精選方案 (Manual Strategy J)"))
+            p.append("")
+        if bt_ofc:
+            p.append(_backtest_section(
+                bt_ofc,
+                "🧑‍💼 上班族三檔方案 (Office Worker — 3 Picks)"))
             p.append("")
     else:
         p.append(_backtest_section(bt))
@@ -333,7 +340,7 @@ def generate(date_str: str) -> Path:
         p.append("")
 
     # Trade logs (at end of report)
-    if has_dual:
+    if has_multi:
         p.append("---")
         p.append("")
         p.append("## 📋 回測交易進出明細")
@@ -345,6 +352,11 @@ def generate(date_str: str) -> Path:
         if bt_man:
             p.append(_trade_log_section(
                 bt_man, "🎯 手動精選方案 — 交易紀錄"))
+            p.append("")
+        if bt_ofc:
+            p.append(_trade_log_section(
+                bt_ofc,
+                "🧑‍💼 上班族三檔方案 — 交易紀錄"))
             p.append("")
     elif bt:
         p.append("---")
