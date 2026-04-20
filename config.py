@@ -24,7 +24,7 @@ MACD_SIGNAL = 9
 LOOKBACK_DAYS = 5          # trading days to scan for signal events
 
 # ── Data fetching ──────────────────────────────────────
-HISTORY_PERIOD = "6mo"     # yfinance history window
+HISTORY_PERIOD = "2y"      # yfinance history window (2 years for deeper backtest)
 YF_BATCH_SIZE = 80         # tickers per yfinance batch
 MIN_DATA_POINTS = 35       # minimum rows needed for MACD(26)+buffer
 REQUEST_DELAY = 1.0        # seconds between API calls

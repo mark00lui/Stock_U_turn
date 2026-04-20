@@ -67,14 +67,18 @@ def _sec_signal_scan(p: list[str], results: list[dict], total: int) -> None:
     p.append("|----------|------|------|")
     p.append(f"| 掃描標的 | {total} | 台股前 1000 大 |")
     p.append(f"| 反轉訊號 | {len(results)} | RSI/MACD 偵測到反轉跡象 |")
-    p.append(f"| ★★★★★ | {s5} | RSI 超賣反彈 + MACD 金叉 + 底部 |")
+    p.append(f"| ★★★★★ | {s5} | RSI 超賣反彈 + MACD 金叉 + 底部（最高品質）|")
     p.append(f"| ★★★★ | {s4} | 強反轉，兩項以上確認 |")
     p.append(f"| ★★★ | {s3} | 觀察級 |")
-    p.append(f"| **進入驗證 (4★+)** | **{strong}** | **→ 下一步三維驗證** |")
+    p.append(f"| **精選漏斗 (5★)** | **{s5}** | **→ 進入三維驗證** |")
+    p.append(f"| 備選 (4★) | {s4} | 5★ 不足時替補 |")
     p.append("")
 
-    # Show the funnel stocks (4★+)
-    funnel = [r for r in results if r["stars"] >= 4]
+    # Show funnel: 5★ first, then 4★ as backup
+    funnel = [r for r in results if r["stars"] >= 5]
+    backup = [r for r in results if r["stars"] == 4]
+    if len(funnel) < 5 and backup:
+        funnel = funnel + backup[:10 - len(funnel)]
     if funnel:
         p.append(f"**以下 {len(funnel)} 檔進入三維驗證（從頭到尾追蹤同一批股票）：**")
         p.append("")
@@ -172,7 +176,7 @@ def _sec_final_picks(p: list[str], strategy: str, trades_md: str,
             if reasons:
                 approaching.append((t, " / ".join(reasons)))
 
-        p.append("### 明日操作計畫 (上班族三檔方案)")
+        p.append("### 明日操作計畫")
         p.append("")
         p.append(f"> 停損 `{sl}%` · 目標 `+{tgt}%` · 持有 `{max_hold}d` · 4★+ · 倉位 33%")
         p.append("")
@@ -260,37 +264,11 @@ def _compact_metrics(bt: dict) -> str:
 def _sec_performance(p: list[str], bt_mom, bt_man, bt_ofc) -> None:
     p.append("## 4. 策略績效儀表板")
     p.append("")
-    p.append("> 以下為歷史回測統計，驗證策略有效性。回測持倉 ≠ 今日推薦。")
-    p.append("")
-
-    # Comparison table
-    def _pf(bt):
-        if not bt:
-            return "—"
-        v = bt.get("metrics", {}).get("profit_factor", 0)
-        return f"{v:.2f}" if v != float("inf") else "∞"
-
-    def _v(bt, key, fmt="{}", default="—"):
-        if not bt:
-            return default
-        for d in [bt.get("strategy", {}), bt.get("metrics", {})]:
-            if key in d:
-                return fmt.format(d[key])
-        return default
-
-    p.append("| | 動能 | 手動 J | 上班族 |")
-    p.append("|---|---|---|---|")
-    p.append(f'| 停損/目標 | {_v(bt_mom,"stop_loss_pct")}%/+{_v(bt_mom,"target_pct")}% | {_v(bt_man,"stop_loss_pct")}%/+{_v(bt_man,"target_pct")}% | {_v(bt_ofc,"stop_loss_pct")}%/+{_v(bt_ofc,"target_pct")}% |')
-    p.append(f'| 星等/持有 | {_v(bt_mom,"min_stars")}★/{_v(bt_mom,"max_hold_days")}d | {_v(bt_man,"min_stars")}★/{_v(bt_man,"max_hold_days")}d | {_v(bt_ofc,"min_stars")}★/{_v(bt_ofc,"max_hold_days")}d |')
-    p.append(f'| 勝率 | {_v(bt_mom,"win_rate","{}%")} | {_v(bt_man,"win_rate","{}%")} | {_v(bt_ofc,"win_rate","{}%")} |')
-    p.append(f"| PF | {_pf(bt_mom)} | {_pf(bt_man)} | {_pf(bt_ofc)} |")
-    p.append(f'| 報酬 | {_v(bt_mom,"total_return_pct","{:+.1f}%")} | {_v(bt_man,"total_return_pct","{:+.1f}%")} | {_v(bt_ofc,"total_return_pct","{:+.1f}%")} |')
+    p.append("> 2 年歷史回測，最多同時持有 3 檔。回測驗證策略有效性。")
     p.append("")
 
     for bt, title, desc in [
-        (bt_mom, "動能方案", "高頻短線 · SL-8% T+10% · 3★+ · 15d · pos 5%"),
-        (bt_man, "手動精選 J", "中頻篩選 · SL-7% T+14% · 4★+ · 20d · pos 12% · EE 10d<6%"),
-        (bt_ofc, "上班族三檔", "低頻集中 · SL-8% T+20% · 4★+ · 30d · pos 33%"),
+        (bt_ofc, "U 型反轉三檔方案", "SL-10% · T+25% · 5★ · 40d · max 3 positions · pos 33%"),
     ]:
         if not bt:
             continue
@@ -406,8 +384,6 @@ def generate(date_str: str) -> Path:
     trades_md    = _read_md("trades")
     verification = _read_md("verification")
 
-    bt_mom = _load_bt("momentum")
-    bt_man = _load_bt("manual")
     bt_ofc = _load_bt("office")
 
     p: list[str] = []
@@ -415,7 +391,7 @@ def generate(date_str: str) -> Path:
     # Title
     p.append(f"# CTA Daily Report — {date_str}")
     p.append("")
-    p.append("> 台股前 1000 大 · RSI/MACD 抄底反轉 · Serial Funnel Architecture · 6-Agent AI")
+    p.append("> 台股前 1000 大 · U 型反轉 · 精選三檔 · max 3 positions · 6-Agent AI")
     p.append(">")
     p.append("> [GitHub](https://github.com/mark00lui/Stock_U_turn) · [Dashboard](https://mark00lui.github.io/Stock_U_turn/)")
     p.append("")
@@ -436,7 +412,7 @@ def generate(date_str: str) -> Path:
     _sec_signal_scan(p, results, total_scanned)
     _sec_validation(p, fundamentals, industry)
     _sec_final_picks(p, strategy, trades_md, bt_ofc, results)
-    _sec_performance(p, bt_mom, bt_man, bt_ofc)
+    _sec_performance(p, None, None, bt_ofc)
 
     # Quant verification
     if verification:
@@ -449,7 +425,7 @@ def generate(date_str: str) -> Path:
         p.append("---")
         p.append("")
 
-    _sec_trade_logs(p, bt_mom, bt_man, bt_ofc)
+    _sec_trade_logs(p, None, None, bt_ofc)
 
     # Footer
     p.append("## 免責聲明")
