@@ -404,6 +404,7 @@ def generate(date_str: str) -> Path:
     industry     = _read_md("industry")
     strategy     = _read_md("strategy")
     trades_md    = _read_md("trades")
+    verification = _read_md("verification")
 
     bt_mom = _load_bt("momentum")
     bt_man = _load_bt("manual")
@@ -436,6 +437,18 @@ def generate(date_str: str) -> Path:
     _sec_validation(p, fundamentals, industry)
     _sec_final_picks(p, strategy, trades_md, bt_ofc, results)
     _sec_performance(p, bt_mom, bt_man, bt_ofc)
+
+    # Quant verification
+    if verification:
+        p.append("## 4b. 量化驗證")
+        p.append("")
+        p.append("> 統計檢定驗證回測結果是否具顯著性（非隨機運氣）")
+        p.append("")
+        p.append(_strip_agent_heading(verification))
+        p.append("")
+        p.append("---")
+        p.append("")
+
     _sec_trade_logs(p, bt_mom, bt_man, bt_ofc)
 
     # Footer

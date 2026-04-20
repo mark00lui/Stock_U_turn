@@ -45,6 +45,7 @@ class Strategy:
     position_pct: float = 5.0         # % of portfolio per trade
     early_exit_days: int = 0          # if >0: exit early when gain < early_exit_min after N days
     early_exit_min_pct: float = 3.0   # minimum gain% required to stay after early_exit_days
+    max_positions: int = 0            # max concurrent positions (0 = unlimited)
 
 
 # ── Trade record ───────────────────────────────────────
@@ -141,6 +142,27 @@ def _score_to_descs(rsi_arr, hist_arr, macd_arr, i: int, lb: int) -> list[str]:
     return descs
 
 
+# ── Signal record (for position-limited mode) ────────
+
+@dataclass
+class _Signal:
+    """Detected signal for the global position manager."""
+    date_str: str       # "YYYY-MM-DD"
+    date_idx: int       # index into this stock's price array
+    ticker: str
+    code: str
+    name: str
+    market: str
+    entry_price: float
+    score: float
+    stars: int
+    descs: list[str]
+    # references for exit simulation
+    close_arr: np.ndarray
+    dates_arr: object    # DatetimeIndex
+    n: int               # length of price array
+
+
 # ── Backtest engine ────────────────────────────────────
 
 class BacktestEngine:
@@ -149,6 +171,13 @@ class BacktestEngine:
         self.trades: list[Trade] = []
 
     def run(self, stocks: list[dict], prices: dict) -> list[Trade]:
+        if self.strat.max_positions > 0:
+            return self._run_with_limits(stocks, prices)
+        return self._run_unlimited(stocks, prices)
+
+    # ── Unlimited mode (original, fast) ───────────────
+
+    def _run_unlimited(self, stocks: list[dict], prices: dict) -> list[Trade]:
         ticker_map = {s["yf_ticker"]: s for s in stocks}
         total = len(prices)
         done = 0
@@ -172,7 +201,6 @@ class BacktestEngine:
         if n < warmup + self.strat.max_hold_days:
             return
 
-        # pre-compute indicators (vectorised)
         rsi_s = calc_rsi(df["Close"], config.RSI_PERIOD)
         macd_s, _, hist_s = calc_macd(
             df["Close"], config.MACD_FAST, config.MACD_SLOW, config.MACD_SIGNAL
@@ -187,80 +215,186 @@ class BacktestEngine:
         name = info.get("name", "")
         market = info.get("market", "")
 
-        last_exit_i = -self.strat.cooldown_days  # allow first trade
+        last_exit_i = -self.strat.cooldown_days
 
         for i in range(warmup, n):
-            # skip if in cooldown
             if i - last_exit_i < self.strat.cooldown_days:
                 continue
-
             score = _signal_score(rsi, hist, macd, i, lb)
             stars = _score_to_stars(score)
             if stars < self.strat.min_stars:
                 continue
 
-            # ── enter trade at close[i] ────────────────
             entry_price = close[i]
             if entry_price <= 0 or np.isnan(entry_price):
                 continue
 
             descs = _score_to_descs(rsi, hist, macd, i, lb)
-            exit_price = None
-            exit_reason = None
-            exit_j = None
-
-            # scan forward for exit
-            for j in range(i + 1, min(i + 1 + self.strat.max_hold_days, n)):
-                price = close[j]
-                if np.isnan(price) or price <= 0:
-                    continue
-                pct = (price / entry_price - 1) * 100
-                days_held = j - i
-
-                if pct <= self.strat.stop_loss_pct:
-                    exit_price = price
-                    exit_reason = "停損"
-                    exit_j = j
-                    break
-                elif pct >= self.strat.target_pct:
-                    exit_price = price
-                    exit_reason = "達標"
-                    exit_j = j
-                    break
-                elif (self.strat.early_exit_days > 0
-                      and days_held >= self.strat.early_exit_days
-                      and pct < self.strat.early_exit_min_pct):
-                    exit_price = price
-                    exit_reason = "早期出場"
-                    exit_j = j
-                    break
-
-            if exit_reason is None:
-                # time-based exit or still holding
-                end_j = min(i + self.strat.max_hold_days, n - 1)
-                exit_price = close[end_j]
-                exit_j = end_j
-                if end_j >= n - 1:
-                    exit_reason = "持倉中"
-                else:
-                    exit_reason = "到期"
+            exit_price, exit_reason, exit_j = self._find_exit(
+                close, i, entry_price, n)
 
             pnl = round((exit_price / entry_price - 1) * 100, 2)
-
             self.trades.append(Trade(
                 code=code, name=name, market=market,
                 entry_date=str(dates[i].date()),
                 entry_price=round(float(entry_price), 2),
-                signal_stars=stars,
-                signal_descs=descs,
+                signal_stars=stars, signal_descs=descs,
                 exit_date=str(dates[exit_j].date()),
                 exit_price=round(float(exit_price), 2),
-                exit_reason=exit_reason,
-                pnl_pct=pnl,
+                exit_reason=exit_reason, pnl_pct=pnl,
                 holding_days=exit_j - i,
             ))
+            last_exit_i = exit_j
 
-            last_exit_i = exit_j  # cooldown from exit
+    def _find_exit(self, close, entry_i, entry_price, n):
+        """Scan forward from entry to find exit. Returns (exit_price, reason, exit_idx)."""
+        for j in range(entry_i + 1, min(entry_i + 1 + self.strat.max_hold_days, n)):
+            price = close[j]
+            if np.isnan(price) or price <= 0:
+                continue
+            pct = (price / entry_price - 1) * 100
+            days_held = j - entry_i
+            if pct <= self.strat.stop_loss_pct:
+                return price, "停損", j
+            if pct >= self.strat.target_pct:
+                return price, "達標", j
+            if (self.strat.early_exit_days > 0
+                    and days_held >= self.strat.early_exit_days
+                    and pct < self.strat.early_exit_min_pct):
+                return price, "早期出場", j
+        end_j = min(entry_i + self.strat.max_hold_days, n - 1)
+        reason = "持倉中" if end_j >= n - 1 else "到期"
+        return close[end_j], reason, end_j
+
+    # ── Position-limited mode (global chronological) ──
+
+    def _run_with_limits(self, stocks: list[dict], prices: dict) -> list[Trade]:
+        """Two-phase backtest: detect all signals → simulate with position cap."""
+        ticker_map = {s["yf_ticker"]: s for s in stocks}
+        total = len(prices)
+        max_pos = self.strat.max_positions
+
+        # Phase 1: detect all signals across all stocks
+        all_signals: list[_Signal] = []
+        done = 0
+        for ticker, df in prices.items():
+            info = ticker_map.get(ticker, {})
+            sigs = self._detect_signals(df, info, ticker)
+            all_signals.extend(sigs)
+            done += 1
+            if done % 200 == 0:
+                print(f"    {done}/{total} stocks ...")
+
+        # Sort by date, then by score descending (best signals first)
+        all_signals.sort(key=lambda s: (s.date_str, -s.score))
+        print(f"    Detected {len(all_signals)} signals, applying max_positions={max_pos} ...")
+
+        # Phase 2: simulate with position limits
+        # open_positions: list of (exit_date_str, is_holding, signal, Trade)
+        open_positions: list[tuple[str, bool, _Signal, Trade]] = []
+        # Per-stock cooldown tracker
+        stock_cooldown: dict[str, str] = {}  # code -> last_exit_date_str
+
+        for sig in all_signals:
+            # Remove positions that have ACTUALLY exited by this date
+            # "持倉中" positions never exit — they stay permanently
+            still_open = []
+            for exit_dt, is_holding, s, trade in open_positions:
+                if not is_holding and exit_dt <= sig.date_str:
+                    self.trades.append(trade)
+                else:
+                    still_open.append((exit_dt, is_holding, s, trade))
+            open_positions = still_open
+
+            # Check capacity
+            if len(open_positions) >= max_pos:
+                continue
+
+            # Check per-stock cooldown
+            if sig.code in stock_cooldown:
+                last_exit = stock_cooldown[sig.code]
+                if sig.date_str <= last_exit:
+                    continue
+
+            # Check not already holding this stock
+            held_codes = {s.code for _, _, s, _ in open_positions}
+            if sig.code in held_codes:
+                continue
+
+            # Enter trade and simulate exit
+            exit_price, exit_reason, exit_j = self._find_exit(
+                sig.close_arr, sig.date_idx, sig.entry_price, sig.n)
+
+            exit_date_str = str(sig.dates_arr[exit_j].date())
+            pnl = round((exit_price / sig.entry_price - 1) * 100, 2)
+
+            trade = Trade(
+                code=sig.code, name=sig.name, market=sig.market,
+                entry_date=sig.date_str,
+                entry_price=round(float(sig.entry_price), 2),
+                signal_stars=sig.stars, signal_descs=sig.descs,
+                exit_date=exit_date_str,
+                exit_price=round(float(exit_price), 2),
+                exit_reason=exit_reason, pnl_pct=pnl,
+                holding_days=exit_j - sig.date_idx,
+            )
+
+            is_holding = (exit_reason == "持倉中")
+            open_positions.append((exit_date_str, is_holding, sig, trade))
+            if not is_holding:
+                stock_cooldown[sig.code] = exit_date_str
+
+        # Flush remaining open positions
+        for _, _, _, trade in open_positions:
+            self.trades.append(trade)
+
+        self.trades.sort(key=lambda t: t.entry_date)
+        return self.trades
+
+    def _detect_signals(self, df: pd.DataFrame, info: dict, ticker: str) -> list[_Signal]:
+        """Detect all entry signals for a single stock (no trades created)."""
+        df = df.copy()
+        close = df["Close"].values
+        n = len(close)
+
+        warmup = config.MACD_SLOW + 10
+        if n < warmup + self.strat.max_hold_days:
+            return []
+
+        rsi_s = calc_rsi(df["Close"], config.RSI_PERIOD)
+        macd_s, _, hist_s = calc_macd(
+            df["Close"], config.MACD_FAST, config.MACD_SLOW, config.MACD_SIGNAL
+        )
+        rsi = rsi_s.values
+        hist = hist_s.values
+        macd = macd_s.values
+
+        dates = df.index
+        lb = config.LOOKBACK_DAYS
+        code = info.get("code", "")
+        name = info.get("name", "")
+        market = info.get("market", "")
+
+        signals = []
+        for i in range(warmup, n):
+            score = _signal_score(rsi, hist, macd, i, lb)
+            stars = _score_to_stars(score)
+            if stars < self.strat.min_stars:
+                continue
+            entry_price = close[i]
+            if entry_price <= 0 or np.isnan(entry_price):
+                continue
+            descs = _score_to_descs(rsi, hist, macd, i, lb)
+            signals.append(_Signal(
+                date_str=str(dates[i].date()),
+                date_idx=i, ticker=ticker,
+                code=code, name=name, market=market,
+                entry_price=entry_price,
+                score=score, stars=stars, descs=descs,
+                close_arr=close, dates_arr=dates, n=n,
+            ))
+
+        return signals
 
 
 # ── Metrics ────────────────────────────────────────────
@@ -567,6 +701,8 @@ def main() -> tuple[list[Trade], Metrics, Strategy]:
     parser.add_argument("--position", type=float, default=5.0)
     parser.add_argument("--early-exit-days", type=int, default=0)
     parser.add_argument("--early-exit-min", type=float, default=3.0)
+    parser.add_argument("--max-positions", type=int, default=0,
+                        help="Max concurrent positions (0 = unlimited)")
     parser.add_argument("--label", type=str, default="",
                         help="Label for output files (e.g. 'momentum', 'manual')")
     args = parser.parse_args()
@@ -579,6 +715,7 @@ def main() -> tuple[list[Trade], Metrics, Strategy]:
         position_pct=args.position,
         early_exit_days=args.early_exit_days,
         early_exit_min_pct=args.early_exit_min,
+        max_positions=args.max_positions,
     )
     label = args.label
 
