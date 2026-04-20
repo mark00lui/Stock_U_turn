@@ -1,17 +1,16 @@
-"""Generate CTA daily Markdown report — Serial Funnel Architecture.
-
-Same stocks flow from signal scan → validation → scoring → action plan.
+"""Generate CTA daily Markdown report — 4-Strategy Architecture.
 
 Sections:
-  1. 訊號掃描 — funnel table + top signal list
-  2. 三維驗證 — fundamentals + industry on the SAME stocks
-  3. 最終推薦 — unified scoring + tomorrow's action plan
-  4. 策略績效 — backtest dashboards (separate from picks)
-  5. 交易明細 — collapsed appendix
+  1. 四策略掃描 — each strategy's candidates today
+  2. 精選三檔 — why these 3 per strategy (current holdings)
+  3. 明日計畫 — buy/sell actions per strategy
+  4. 策略績效 — backtest dashboards
+  5. 量化驗證 — statistical tests
+  6. 交易明細 — collapsed appendix
 
 Usage:
-    python generate_daily_md.py              # today
-    python generate_daily_md.py 2026-04-17   # specific date
+    python generate_daily_md.py
+    python generate_daily_md.py 2026-04-20
 """
 from __future__ import annotations
 
@@ -35,14 +34,18 @@ def _read_md(name: str) -> str:
     p = DATA_DIR / "agent_outputs" / f"{name}.md"
     return p.read_text(encoding="utf-8").strip() if p.exists() else ""
 
-
 def _load_bt(label: str) -> dict | None:
     p = DATA_DIR / f"backtest_{label}.json"
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
 
+def _load_signals(label: str) -> list[dict]:
+    name = "signals_latest.json" if label == "reversal" else f"signals_{label}.json"
+    p = DATA_DIR / name
+    if not p.exists():
+        return []
+    return json.loads(p.read_text(encoding="utf-8")).get("results", [])
 
-def _strip_agent_heading(md: str) -> str:
-    """Strip H1 title, downgrade ## → ####."""
+def _strip_heading(md: str) -> str:
     lines = md.split("\n")
     if lines and lines[0].startswith("# "):
         lines = lines[1:]
@@ -52,116 +55,149 @@ def _strip_agent_heading(md: str) -> str:
     return text.strip()
 
 
-# ── Section 1: Signal Scan ───────────────────────────
+# ── Strategy metadata ─────────────────────────────────
 
-def _sec_signal_scan(p: list[str], results: list[dict], total: int) -> None:
-    p.append("## 1. 訊號掃描：系統今天發現了什麼？")
+STRATEGIES = [
+    {
+        "key": "reversal", "label": "U 型反轉",
+        "icon": "🔄", "style": "逆勢抄底",
+        "desc": "RSI 超賣反彈 + MACD 金叉 · SL-10% T+25% · 5★ · 40d",
+    },
+    {
+        "key": "momentum", "label": "動能突破",
+        "icon": "🚀", "style": "順勢追漲",
+        "desc": "突破 20MA + 量增 + 趨勢確認 · SL-10% T+25% · 5★ · 30d",
+    },
+    {
+        "key": "breakout", "label": "創新高突破",
+        "icon": "📈", "style": "快進快出",
+        "desc": "60 日新高 + 量爆 · SL-5% T+15% · 4★ · 10d",
+    },
+    {
+        "key": "meanrevert", "label": "均值回歸",
+        "icon": "🔃", "style": "超賣反彈",
+        "desc": "布林下軌反彈 + RSI 低檔 · SL-8% T+20% · 4★ · 25d",
+    },
+]
+
+
+# ── Section 1: Four Strategy Scan ────────────────────
+
+def _sec_scan(p: list[str], all_signals: dict[str, list], total_scanned: int) -> None:
+    p.append("## 1. 四策略掃描：今日候選股")
+    p.append("")
+    p.append(f"> 掃描 {total_scanned} 檔，四套策略各自偵測候選。每策略最多持 3 檔。")
     p.append("")
 
-    s5 = sum(1 for r in results if r["stars"] == 5)
-    s4 = sum(1 for r in results if r["stars"] == 4)
-    s3 = sum(1 for r in results if r["stars"] == 3)
-    strong = s5 + s4
-
-    p.append("| 篩選漏斗 | 數量 | 說明 |")
-    p.append("|----------|------|------|")
-    p.append(f"| 掃描標的 | {total} | 台股前 1000 大 |")
-    p.append(f"| 反轉訊號 | {len(results)} | RSI/MACD 偵測到反轉跡象 |")
-    p.append(f"| ★★★★★ | {s5} | RSI 超賣反彈 + MACD 金叉 + 底部（最高品質）|")
-    p.append(f"| ★★★★ | {s4} | 強反轉，兩項以上確認 |")
-    p.append(f"| ★★★ | {s3} | 觀察級 |")
-    p.append(f"| **精選漏斗 (5★)** | **{s5}** | **→ 進入三維驗證** |")
-    p.append(f"| 備選 (4★) | {s4} | 5★ 不足時替補 |")
+    # Summary table
+    p.append("| 策略 | 風格 | 候選數 | 4★+ | 5★ | 今日 Top 3 候選 |")
+    p.append("|------|------|--------|-----|----|--------------------|")
+    for s in STRATEGIES:
+        sigs = all_signals.get(s["key"], [])
+        s4 = sum(1 for r in sigs if r.get("stars", 0) >= 4)
+        s5 = sum(1 for r in sigs if r.get("stars", 0) >= 5)
+        top3 = [f'{r["code"]}{r["name"]}' for r in sigs[:3]]
+        top3_str = " / ".join(top3) if top3 else "—"
+        p.append(f'| {s["icon"]} {s["label"]} | {s["style"]} | {len(sigs)} | {s4} | {s5} | {top3_str} |')
     p.append("")
 
-    # Show funnel: 5★ first, then 4★ as backup
-    funnel = [r for r in results if r["stars"] >= 5]
-    backup = [r for r in results if r["stars"] == 4]
-    if len(funnel) < 5 and backup:
-        funnel = funnel + backup[:10 - len(funnel)]
-    if funnel:
-        p.append(f"**以下 {len(funnel)} 檔進入三維驗證（從頭到尾追蹤同一批股票）：**")
+    # Detail per strategy
+    for s in STRATEGIES:
+        sigs = all_signals.get(s["key"], [])
+        top = sigs[:8]
+        if not top:
+            continue
+        p.append(f'### {s["icon"]} {s["label"]} 候選 ({len(sigs)} 檔)')
         p.append("")
-        p.append("| # | 代號 | 名稱 | 市場 | 收盤 | 漲跌% | RSI | 星等 | 訊號描述 |")
-        p.append("|---|------|------|------|------|-------|-----|------|----------|")
-        for i, r in enumerate(funnel, 1):
-            sigs = " / ".join(r["descriptions"])
-            chg = r["pct_change"]
+        p.append(f"> {s['desc']}")
+        p.append("")
+        p.append("| # | 代號 | 名稱 | 收盤 | 漲跌% | RSI | 星等 | 訊號 |")
+        p.append("|---|------|------|------|-------|-----|------|------|")
+        for i, r in enumerate(top, 1):
+            chg = r.get("pct_change", 0)
             chg_s = f"+{chg:.1f}%" if chg >= 0 else f"{chg:.1f}%"
-            stars = "★" * r["stars"]
-            p.append(
-                f'| {i} | `{r["code"]}` | {r["name"]} | {r["market"]} | '
-                f'{r["close"]:.1f} | {chg_s} | {r["rsi"]:.1f} | {stars} | {sigs} |'
-            )
+            stars = "★" * r.get("stars", 0)
+            descs = " / ".join(r.get("descriptions", []))
+            p.append(f'| {i} | `{r["code"]}` | {r["name"]} | {r["close"]:.1f} | {chg_s} | {r.get("rsi", 0):.1f} | {stars} | {descs} |')
         p.append("")
 
     p.append("---")
     p.append("")
 
 
-# ── Section 2: Validation ────────────────────────────
+# ── Section 2: Current Holdings ──────────────────────
 
-def _sec_validation(p: list[str], fundamentals: str, industry: str) -> None:
-    p.append("## 2. 三維驗證：基本面與行業支持嗎？")
+def _sec_holdings(p: list[str], all_bt: dict[str, dict | None]) -> None:
+    p.append("## 2. 精選三檔：各策略當前持倉")
     p.append("")
-    p.append("> 針對上方同一批訊號股票，兩位 AI 分析師逐檔驗證。")
-    p.append("")
-
-    p.append("### 2a. 基本面驗證")
-    p.append("")
-    p.append("> *Revenue Analyst — 針對訊號清單逐檔查月營收、EPS、財報*")
-    p.append("")
-    if fundamentals:
-        p.append(_strip_agent_heading(fundamentals))
-    else:
-        p.append("_今日未產出_")
+    p.append("> 每策略最多同時持有 3 檔。以下為回測模擬的當前持倉狀態。")
     p.append("")
 
-    p.append("### 2b. 行業驗證")
-    p.append("")
-    p.append("> *Industry Analyst — 針對訊號清單逐檔查產業景氣、供應鏈位置*")
-    p.append("")
-    if industry:
-        p.append(_strip_agent_heading(industry))
-    else:
-        p.append("_今日未產出_")
-    p.append("")
+    for s in STRATEGIES:
+        bt = all_bt.get(s["key"])
+        if not bt or not bt.get("trades"):
+            continue
+
+        holding = [t for t in bt["trades"] if t.get("exit_reason") == "持倉中"]
+        strat = bt.get("strategy", {})
+
+        p.append(f'### {s["icon"]} {s["label"]}：{len(holding)} 檔持倉中')
+        p.append("")
+
+        if not holding:
+            p.append("_目前無持倉_")
+            p.append("")
+            continue
+
+        holding.sort(key=lambda t: t.get("pnl_pct", 0), reverse=True)
+
+        p.append("| 代號 | 名稱 | 進場日 | 進場價 | 現價 | 損益% | 天數 | 為什麼選它 |")
+        p.append("|------|------|--------|--------|------|-------|------|-----------|")
+        for t in holding:
+            pnl = t.get("pnl_pct", 0)
+            pnl_s = f"+{pnl:.2f}%" if pnl >= 0 else f"{pnl:.2f}%"
+            stars = "★" * t.get("signal_stars", 0)
+            descs = " / ".join(t.get("signal_descs", []))
+            reason = f'{stars} {descs}' if descs else stars
+            p.append(
+                f'| `{t["code"]}` | {t["name"]} | {t["entry_date"]} | '
+                f'{t["entry_price"]:.2f} | {t.get("exit_price", 0):.2f} | '
+                f'{pnl_s} | {t.get("holding_days", 0)}d | {reason} |')
+        p.append("")
 
     p.append("---")
     p.append("")
 
 
-# ── Section 3: Final Picks + Action Plan ─────────────
+# ── Section 3: Tomorrow's Plan ───────────────────────
 
-def _sec_final_picks(p: list[str], strategy: str, trades_md: str,
-                     bt_ofc: dict | None, signals: list[dict]) -> None:
-    p.append("## 3. 最終推薦與明日操作")
+def _sec_tomorrow(p: list[str], all_bt: dict[str, dict | None],
+                  all_signals: dict[str, list]) -> None:
+    p.append("## 3. 明日操作計畫")
     p.append("")
-    p.append("> *Chief Strategist 整合三維評分 (技術 40% + 基本面 30% + 行業 30%) → 最終排序*")
-    p.append("")
-
-    if strategy:
-        p.append(_strip_agent_heading(strategy))
-    else:
-        p.append("_今日未產出_")
+    p.append("> 收盤後分析 → 次日 08:55 掛限價單 → 盤中不盯盤")
     p.append("")
 
-    # Tomorrow's action from office worker strategy
-    if bt_ofc and bt_ofc.get("trades"):
-        strat = bt_ofc.get("strategy", {})
+    for s in STRATEGIES:
+        bt = all_bt.get(s["key"])
+        sigs = all_signals.get(s["key"], [])
+        if not bt or not bt.get("trades"):
+            continue
+
+        strat = bt.get("strategy", {})
         min_stars = strat.get("min_stars", 4)
         max_hold = strat.get("max_hold_days", 30)
-        sl = strat.get("stop_loss_pct", -8)
-        tgt = strat.get("target_pct", 20)
+        sl = strat.get("stop_loss_pct", -10)
+        tgt = strat.get("target_pct", 25)
 
-        holding = [t for t in bt_ofc["trades"] if t.get("exit_reason") == "持倉中"]
+        holding = [t for t in bt["trades"] if t.get("exit_reason") == "持倉中"]
         held_codes = {t["code"] for t in holding}
 
-        candidates = [
-            s for s in signals
-            if s.get("stars", 0) >= min_stars and s["code"] not in held_codes
-        ][:8]
+        # New buy candidates
+        candidates = [r for r in sigs
+                      if r.get("stars", 0) >= min_stars and r["code"] not in held_codes][:5]
 
+        # Exit alerts
         approaching = []
         for t in holding:
             days = t.get("holding_days", 0)
@@ -176,60 +212,55 @@ def _sec_final_picks(p: list[str], strategy: str, trades_md: str,
             if reasons:
                 approaching.append((t, " / ".join(reasons)))
 
-        p.append("### 明日操作計畫")
+        slots_free = 3 - len(holding)
+
+        p.append(f'### {s["icon"]} {s["label"]}')
         p.append("")
-        p.append(f"> 停損 `{sl}%` · 目標 `+{tgt}%` · 持有 `{max_hold}d` · 4★+ · 倉位 33%")
+        p.append(f'持倉 {len(holding)}/3 · 空位 {slots_free} · 停損 {sl}% · 目標 +{tgt}% · 持有 {max_hold}d')
         p.append("")
 
-        if candidates:
-            p.append("**新買入候選：**")
+        # Buy
+        if slots_free > 0 and candidates:
+            p.append(f"**買入候選** (空位 {slots_free} 檔)：")
             p.append("")
-            p.append("| 代號 | 名稱 | 星等 | 收盤 | RSI | 訊號 | 進場區間 | 停損 |")
-            p.append("|------|------|------|------|-----|------|----------|------|")
-            for s in candidates:
-                stars = "★" * s["stars"]
-                sigs = " / ".join(s["descriptions"])
-                close = s["close"]
+            p.append("| 代號 | 名稱 | 星等 | 收盤 | 訊號 | 掛單價 | 停損 |")
+            p.append("|------|------|------|------|------|--------|------|")
+            for r in candidates[:slots_free + 2]:  # show a few extra as backup
+                stars = "★" * r.get("stars", 0)
+                descs = " / ".join(r.get("descriptions", []))[:30]
+                close = r["close"]
                 stop = close * (1 + sl / 100)
                 p.append(
-                    f'| `{s["code"]}` | {s["name"]} | {stars} | '
-                    f'{close:.1f} | {s["rsi"]:.1f} | {sigs} | '
-                    f'{close:.1f}-{close * 1.005:.1f} | {stop:.1f} |'
-                )
+                    f'| `{r["code"]}` | {r["name"]} | {stars} | '
+                    f'{close:.1f} | {descs} | {close:.1f} | {stop:.1f} |')
+            p.append("")
+        elif slots_free > 0:
+            p.append(f"**買入候選**：今日無符合 {min_stars}★ 的新訊號。等待。")
             p.append("")
         else:
-            p.append("**新買入候選**：今日訊號均已在回測持倉中，無新候選。持續持有現有部位。")
+            p.append("**買入候選**：滿倉 3/3，暫不進場。")
             p.append("")
 
+        # Exit
         if approaching:
             p.append(f"**出場警示** ({len(approaching)} 筆)：")
             p.append("")
-            p.append("| 代號 | 名稱 | 進場價 | 現價 | 損益% | 天數 | 警示 |")
-            p.append("|------|------|--------|------|-------|------|------|")
-            for t, reason in approaching[:15]:
+            p.append("| 代號 | 名稱 | 損益% | 天數 | 警示 |")
+            p.append("|------|------|-------|------|------|")
+            for t, reason in approaching[:8]:
                 pnl = t.get("pnl_pct", 0)
                 pnl_s = f"+{pnl:.2f}%" if pnl >= 0 else f"{pnl:.2f}%"
-                p.append(
-                    f'| `{t["code"]}` | {t["name"]} | {t["entry_price"]:.2f} | '
-                    f'{t.get("exit_price", 0):.2f} | {pnl_s} | '
-                    f'{t.get("holding_days", 0)}d | {reason} |'
-                )
+                p.append(f'| `{t["code"]}` | {t["name"]} | {pnl_s} | {t.get("holding_days", 0)}d | {reason} |')
             p.append("")
-
-    # Trader plan
-    if trades_md:
-        p.append("### 操盤手交易計畫")
-        p.append("")
-        p.append("> *Stock Trader — 進場/停損/目標/倉位/風報比*")
-        p.append("")
-        p.append(_strip_agent_heading(trades_md))
-        p.append("")
+        else:
+            p.append("**出場警示**：無持倉接近出場條件。")
+            p.append("")
 
     p.append("---")
     p.append("")
 
 
-# ── Section 4: Strategy Performance ──────────────────
+# ── Section 4: Performance Dashboard ─────────────────
 
 def _compact_metrics(bt: dict) -> str:
     if not bt:
@@ -241,83 +272,67 @@ def _compact_metrics(bt: dict) -> str:
     out = []
     out.append("| 指標 | 數值 |")
     out.append("|------|------|")
-    out.append(f'| 交易數 | {m["total_trades"]} 平倉 + {open_n} 持倉 |')
+    out.append(f'| 交易 | {m["total_trades"]} 平倉 + {open_n} 持倉 |')
     out.append(f'| 勝率 | **{m["win_rate"]}%** |')
     out.append(f'| 平均損益 | {m["avg_pnl"]:+.2f}% |')
     out.append(f'| PF | **{pf}** |')
-    out.append(f'| 累計報酬 | **{m["total_return_pct"]:+.1f}%** |')
-    out.append(f'| 平均持有 | {m["avg_hold_days"]}d |')
-    out.append(f'| 最大連敗 | {m["max_consec_losses"]} |')
-
+    out.append(f'| 報酬 | **{m["total_return_pct"]:+.1f}%** |')
+    out.append(f'| 持有 | {m["avg_hold_days"]}d |')
+    out.append(f'| 連敗 | {m["max_consec_losses"]} |')
     if m.get("by_reason"):
         out.append("")
-        out.append("| 出場原因 | 筆數 | 平均損益 |")
-        out.append("|----------|------|----------|")
+        out.append("| 出場 | 筆數 | avg |")
+        out.append("|------|------|-----|")
         for reason in ("達標", "停損", "到期", "早期出場"):
             if reason in m["by_reason"]:
                 r = m["by_reason"][reason]
                 out.append(f'| {reason} | {r["count"]} | {r["avg_pnl"]:+.2f}% |')
-
     return "\n".join(out)
 
 
-def _sec_performance(p: list[str], bt_rev, bt_mom, bt_brk, bt_mr) -> None:
+def _sec_performance(p: list[str], all_bt: dict[str, dict | None]) -> None:
     p.append("## 4. 策略績效儀表板")
     p.append("")
-    p.append("> 5 年歷史回測，每策略最多同時持 3 檔 (33% each)。")
+    p.append("> 5 年歷史回測，每策略 max 3 檔同時持倉。")
     p.append("")
 
-    for bt, title, desc in [
-        (bt_rev, "U 型反轉", "SL-10% · T+25% · 5★ · 40d"),
-        (bt_mom, "動能突破", "SL-10% · T+25% · 5★ · 30d"),
-        (bt_brk, "創新高突破", "SL-5% · T+15% · 4★ · 10d"),
-        (bt_mr,  "均值回歸", "SL-8% · T+20% · 4★ · 25d"),
-    ]:
+    # Summary comparison
+    p.append("| 策略 | 交易數 | 勝率 | PF | 5yr 報酬 | 統計驗證 |")
+    p.append("|------|--------|------|----|----------|----------|")
+    for s in STRATEGIES:
+        bt = all_bt.get(s["key"])
+        if not bt:
+            p.append(f'| {s["icon"]} {s["label"]} | — | — | — | — | — |')
+            continue
+        m = bt["metrics"]
+        pf = f'{m["profit_factor"]:.2f}' if m["profit_factor"] != float("inf") else "∞"
+        p.append(f'| {s["icon"]} {s["label"]} | {m["total_trades"]} | {m["win_rate"]}% | {pf} | {m["total_return_pct"]:+.1f}% | — |')
+    p.append("")
+
+    for s in STRATEGIES:
+        bt = all_bt.get(s["key"])
         if not bt:
             continue
-        p.append(f"<details>")
-        p.append(f"<summary><b>{title}</b> — {desc}</summary>")
+        p.append(f'<details>')
+        p.append(f'<summary><b>{s["icon"]} {s["label"]}</b> — {s["desc"]}</summary>')
         p.append("")
         p.append(_compact_metrics(bt))
         p.append("")
-
-        # Top 10 + bottom 5 open positions
-        holding = [t for t in bt.get("trades", []) if t.get("exit_reason") == "持倉中"]
-        if holding:
-            holding.sort(key=lambda t: t.get("pnl_pct", 0), reverse=True)
-            total = len(holding)
-            show = holding[:10] + (holding[-5:] if total > 15 else [])
-            p.append(f"**持倉中 ({total} 筆，顯示 Top 10 + Bottom 5)：**")
-            p.append("")
-            p.append("| 代號 | 名稱 | 進場日 | 進場價 | 現價 | 損益% | 天數 |")
-            p.append("|------|------|--------|--------|------|-------|------|")
-            shown = 0
-            for t in holding[:10]:
-                pnl = t.get("pnl_pct", 0)
-                p.append(f'| `{t["code"]}` | {t["name"]} | {t["entry_date"]} | {t["entry_price"]:.2f} | {t.get("exit_price",0):.2f} | {pnl:+.2f}% | {t.get("holding_days",0)}d |')
-                shown += 1
-            if total > 15:
-                p.append(f"| ... | *另 {total - 15} 筆* | | | | | |")
-                for t in holding[-5:]:
-                    pnl = t.get("pnl_pct", 0)
-                    p.append(f'| `{t["code"]}` | {t["name"]} | {t["entry_date"]} | {t["entry_price"]:.2f} | {t.get("exit_price",0):.2f} | {pnl:+.2f}% | {t.get("holding_days",0)}d |')
-            p.append("")
 
         # Recent 10 closed
         closed = [t for t in bt.get("trades", []) if t.get("exit_reason") != "持倉中"]
         recent = closed[-10:]
         if recent:
-            p.append(f"**近期平倉 (最近 {len(recent)} 筆 / 共 {len(closed)} 筆)：**")
+            p.append(f"**近期平倉 ({len(recent)}/{len(closed)})：**")
             p.append("")
             p.append("| 代號 | 名稱 | 進場 | 出場 | 損益% | 天數 | 原因 |")
             p.append("|------|------|------|------|-------|------|------|")
             for t in recent:
                 pnl = t.get("pnl_pct", 0)
                 p.append(
-                    f'| `{t["code"]}` | {t["name"]} | '
-                    f'{t["entry_date"]} | {t.get("exit_date","")} | '
-                    f'{pnl:+.2f}% | {t.get("holding_days",0)}d | {t.get("exit_reason","")} |'
-                )
+                    f'| `{t["code"]}` | {t["name"]} | {t["entry_date"]} | '
+                    f'{t.get("exit_date", "")} | {pnl:+.2f}% | '
+                    f'{t.get("holding_days", 0)}d | {t.get("exit_reason", "")} |')
             p.append("")
 
         p.append("</details>")
@@ -327,27 +342,40 @@ def _sec_performance(p: list[str], bt_rev, bt_mom, bt_brk, bt_mr) -> None:
     p.append("")
 
 
-# ── Section 5: Full Trade Logs ───────────────────────
+# ── Section 5: Quant Verification ────────────────────
 
-def _sec_trade_logs(p: list[str], bt_rev, bt_mom, bt_brk, bt_mr) -> None:
-    p.append("## 5. 完整交易明細")
+def _sec_verification(p: list[str], verification: str) -> None:
+    if not verification:
+        return
+    p.append("## 5. 量化驗證")
+    p.append("")
+    p.append("> 統計檢定：回測結果是否具顯著性（非隨機運氣）")
+    p.append("")
+    p.append(_strip_heading(verification))
+    p.append("")
+    p.append("---")
     p.append("")
 
-    for bt, label in [
-        (bt_rev, "U 型反轉"), (bt_mom, "動能突破"),
-        (bt_brk, "創新高突破"), (bt_mr, "均值回歸"),
-    ]:
+
+# ── Section 6: Trade Logs ────────────────────────────
+
+def _sec_trade_logs(p: list[str], all_bt: dict[str, dict | None]) -> None:
+    p.append("## 6. 完整交易明細")
+    p.append("")
+
+    for s in STRATEGIES:
+        bt = all_bt.get(s["key"])
         if not bt or not bt.get("trades"):
             continue
         holding = [t for t in bt["trades"] if t.get("exit_reason") == "持倉中"]
         closed = [t for t in bt["trades"] if t.get("exit_reason") != "持倉中"]
 
         p.append(f"<details>")
-        p.append(f"<summary>{label}：{len(holding)} 筆持倉 + {len(closed)} 筆平倉</summary>")
+        p.append(f'<summary>{s["icon"]} {s["label"]}：{len(holding)} 持倉 + {len(closed)} 平倉</summary>')
         p.append("")
 
         if holding:
-            p.append(f"#### 持倉中 ({len(holding)} 筆)")
+            p.append(f"#### 持倉中 ({len(holding)})")
             p.append("")
             p.append("| 代號 | 名稱 | 星等 | 進場日 | 進場價 | 現價 | 損益% | 天數 |")
             p.append("|------|------|------|--------|--------|------|-------|------|")
@@ -358,7 +386,7 @@ def _sec_trade_logs(p: list[str], bt_rev, bt_mom, bt_brk, bt_mr) -> None:
 
         recent = closed[-30:]
         if recent:
-            p.append(f"#### 近期平倉 ({len(recent)} / {len(closed)} 筆)")
+            p.append(f"#### 近期平倉 ({len(recent)}/{len(closed)})")
             p.append("")
             p.append("| 代號 | 名稱 | 進場日 | 出場日 | 損益% | 天數 | 原因 |")
             p.append("|------|------|--------|--------|-------|------|------|")
@@ -377,65 +405,54 @@ def _sec_trade_logs(p: list[str], bt_rev, bt_mom, bt_brk, bt_mr) -> None:
 # ── Main generator ─────────────────────────────────────
 
 def generate(date_str: str) -> Path:
-    signals_file = DATA_DIR / "signals_latest.json"
-    if not signals_file.exists():
-        raise FileNotFoundError(f"{signals_file} not found.")
-    signals = json.loads(signals_file.read_text(encoding="utf-8"))
-    results = signals["results"]
-    total_scanned = signals["total_scanned"]
+    # Load all signals
+    all_signals = {}
+    total_scanned = 0
+    for s in STRATEGIES:
+        sigs = _load_signals(s["key"])
+        all_signals[s["key"]] = sigs
+    # Get total_scanned from reversal (primary)
+    sig_file = DATA_DIR / "signals_latest.json"
+    if sig_file.exists():
+        total_scanned = json.loads(sig_file.read_text(encoding="utf-8")).get("total_scanned", 0)
 
-    fundamentals = _read_md("fundamentals")
-    industry     = _read_md("industry")
-    strategy     = _read_md("strategy")
-    trades_md    = _read_md("trades")
+    # Load all backtests
+    all_bt = {s["key"]: _load_bt(s["key"]) for s in STRATEGIES}
+
+    # Load agent outputs
     verification = _read_md("verification")
 
-    bt_rev = _load_bt("reversal")
-    bt_mom = _load_bt("momentum")
-    bt_brk = _load_bt("breakout")
-    bt_mr  = _load_bt("meanrevert")
-    bt_ofc = bt_rev  # alias for backward compat
-
+    # ── Compose ───────────────────────────────────────
     p: list[str] = []
 
     # Title
     p.append(f"# CTA Daily Report — {date_str}")
     p.append("")
-    p.append("> 台股前 1000 大 · U 型反轉 · 精選三檔 · max 3 positions · 6-Agent AI")
+    p.append("> 台股前 1000 大 · 四策略掃描 · 每策略精選 3 檔 · 收盤分析 → 次日掛單")
     p.append(">")
     p.append("> [GitHub](https://github.com/mark00lui/Stock_U_turn) · [Dashboard](https://mark00lui.github.io/Stock_U_turn/)")
     p.append("")
 
     # Navigator
-    p.append("| Step | Section | 回答什麼？ |")
-    p.append("|------|---------|-----------|")
-    p.append("| 1 | 訊號掃描 | 系統偵測到哪些反轉？ |")
-    p.append("| 2 | 三維驗證 | 基本面和行業支持嗎？ |")
-    p.append("| 3 | 最終推薦 | 通過驗證的 Top picks + 明日操作 |")
-    p.append("| 4 | 策略績效 | 回測證明策略有效嗎？ |")
-    p.append("| 5 | 交易明細 | 完整持倉 + 平倉紀錄 |")
+    p.append("| Section | 內容 |")
+    p.append("|---------|------|")
+    p.append("| 1. 四策略掃描 | 各策略偵測到的候選股 |")
+    p.append("| 2. 精選三檔 | 各策略當前持倉 + 選股理由 |")
+    p.append("| 3. 明日計畫 | 買入候選 + 出場警示 |")
+    p.append("| 4. 績效儀表板 | 5 年回測統計 |")
+    p.append("| 5. 量化驗證 | 統計顯著性檢定 |")
+    p.append("| 6. 交易明細 | 完整進出場紀錄 |")
     p.append("")
     p.append("---")
     p.append("")
 
     # Sections
-    _sec_signal_scan(p, results, total_scanned)
-    _sec_validation(p, fundamentals, industry)
-    _sec_final_picks(p, strategy, trades_md, bt_ofc, results)
-    _sec_performance(p, bt_rev, bt_mom, bt_brk, bt_mr)
-
-    # Quant verification
-    if verification:
-        p.append("## 4b. 量化驗證")
-        p.append("")
-        p.append("> 統計檢定驗證回測結果是否具顯著性（非隨機運氣）")
-        p.append("")
-        p.append(_strip_agent_heading(verification))
-        p.append("")
-        p.append("---")
-        p.append("")
-
-    _sec_trade_logs(p, bt_rev, bt_mom, bt_brk, bt_mr)
+    _sec_scan(p, all_signals, total_scanned)
+    _sec_holdings(p, all_bt)
+    _sec_tomorrow(p, all_bt, all_signals)
+    _sec_performance(p, all_bt)
+    _sec_verification(p, verification)
+    _sec_trade_logs(p, all_bt)
 
     # Footer
     p.append("## 免責聲明")
