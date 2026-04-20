@@ -46,6 +46,7 @@ class Strategy:
     early_exit_days: int = 0          # if >0: exit early when gain < early_exit_min after N days
     early_exit_min_pct: float = 3.0   # minimum gain% required to stay after early_exit_days
     max_positions: int = 0            # max concurrent positions (0 = unlimited)
+    signal_type: str = "reversal"     # reversal | momentum | breakout | meanrevert
 
 
 # ── Trade record ───────────────────────────────────────
@@ -140,6 +141,155 @@ def _score_to_descs(rsi_arr, hist_arr, macd_arr, i: int, lb: int) -> list[str]:
     if macd_arr[i] < 0:
         descs.append("底部區域")
     return descs
+
+
+# ── Multi-strategy signal detection at index i ───────
+
+def _momentum_score(close, volume, ma20, ma60, ma20_slope, rsi, i):
+    """Momentum signal score at index i."""
+    if i < 25 or np.isnan(close[i]) or np.isnan(ma20[i]) or np.isnan(rsi[i]):
+        return 0, []
+    c = close[i]
+    score = 0.0
+    descs = []
+
+    if c > ma20[i]:
+        score += 1
+        descs.append("站上20MA")
+        # fresh breakout
+        if i >= 6 and any(close[j] < ma20[j] for j in range(i-5, i)
+                          if not np.isnan(close[j]) and not np.isnan(ma20[j])):
+            score += 1.5
+            descs.append("突破20MA")
+
+    if not np.isnan(ma20_slope[i]) and ma20_slope[i] > 0.5:
+        score += 1
+        descs.append("20MA上升")
+
+    if volume is not None and i >= 20:
+        avg_vol = np.nanmean(volume[max(0,i-20):i])
+        if avg_vol > 0:
+            vr = volume[i] / avg_vol
+            if vr > 1.5:
+                score += 1
+                descs.append(f"量增{vr:.1f}x")
+            if vr > 2.5:
+                score += 0.5
+
+    if 50 <= rsi[i] <= 70:
+        score += 0.5
+        descs.append("動能區")
+    elif rsi[i] > 70:
+        score -= 0.5
+
+    if not np.isnan(ma60[i]) and c > ma60[i]:
+        score += 0.5
+
+    return score, descs
+
+
+def _breakout_score(close, volume, high60, rsi, i):
+    """Breakout signal score at index i."""
+    if i < 65 or np.isnan(close[i]) or np.isnan(high60[i]) or np.isnan(rsi[i]):
+        return 0, []
+    c = close[i]
+    score = 0.0
+    descs = []
+
+    dist = (c / high60[i] - 1) * 100
+    if dist >= -1:
+        score += 2
+        descs.append("創60日新高" if c >= high60[i] else "逼近60日高")
+    elif dist >= -3:
+        score += 1
+        descs.append("接近60日高")
+    else:
+        return 0, []
+
+    if volume is not None and i >= 20:
+        avg_vol = np.nanmean(volume[max(0,i-20):i])
+        if avg_vol > 0:
+            vr = volume[i] / avg_vol
+            if vr > 2.0:
+                score += 1.5
+                descs.append(f"量增{vr:.1f}x")
+            elif vr > 1.3:
+                score += 0.5
+
+    if rsi[i] < 70:
+        score += 0.5
+    elif rsi[i] >= 80:
+        score -= 1
+
+    if i >= 4 and not np.isnan(close[i-3]):
+        gain = (c / close[i-3] - 1) * 100
+        if gain > 5:
+            score += 1
+            descs.append(f"3日漲{gain:.0f}%")
+        elif gain > 3:
+            score += 0.5
+
+    return score, descs
+
+
+def _meanrevert_score(close, volume, bb_lower, bb_mid, rsi, i):
+    """Bollinger Band mean-reversion score at index i."""
+    if i < 25 or np.isnan(close[i]) or np.isnan(bb_lower[i]) or np.isnan(rsi[i]):
+        return 0, []
+    c = close[i]
+    score = 0.0
+    descs = []
+
+    # Must have touched lower band in last 5 days
+    touched = False
+    for j in range(max(0, i-5), i+1):
+        if not np.isnan(close[j]) and not np.isnan(bb_lower[j]) and close[j] <= bb_lower[j] * 1.005:
+            touched = True
+            break
+    if not touched:
+        return 0, []
+
+    if c > bb_lower[i]:
+        score += 2
+        descs.append("布林下軌反彈")
+    else:
+        score += 1
+        descs.append("布林下軌")
+
+    if rsi[i] < 25:
+        score += 2
+        descs.append("極度超賣")
+    elif rsi[i] < 30:
+        score += 1.5
+        descs.append("超賣")
+    elif rsi[i] < 35:
+        score += 1
+        descs.append("低檔")
+    elif rsi[i] < 45:
+        score += 0.5
+
+    if volume is not None and i >= 20:
+        avg_vol = np.nanmean(volume[max(0,i-20):i])
+        if avg_vol > 0 and volume[i] / avg_vol > 1.5:
+            score += 1
+            descs.append("反彈量增")
+
+    if c < bb_mid[i]:
+        score += 0.5
+
+    if i >= 2 and not np.isnan(close[i-1]) and c > close[i-1]:
+        score += 0.5
+        descs.append("日K反彈")
+
+    return score, descs
+
+
+def _multi_score_to_stars(score):
+    if score >= 4.5: return 5
+    if score >= 3.5: return 4
+    if score >= 2.5: return 3
+    if score >= 1.5: return 2
+    return 1
 
 
 # ── Signal record (for position-limited mode) ────────
@@ -356,35 +506,64 @@ class BacktestEngine:
         df = df.copy()
         close = df["Close"].values
         n = len(close)
+        sig_type = self.strat.signal_type
 
-        warmup = config.MACD_SLOW + 10
+        warmup = max(config.MACD_SLOW + 10, 65)
         if n < warmup + self.strat.max_hold_days:
             return []
 
-        rsi_s = calc_rsi(df["Close"], config.RSI_PERIOD)
-        macd_s, _, hist_s = calc_macd(
-            df["Close"], config.MACD_FAST, config.MACD_SLOW, config.MACD_SIGNAL
-        )
-        rsi = rsi_s.values
-        hist = hist_s.values
-        macd = macd_s.values
-
         dates = df.index
-        lb = config.LOOKBACK_DAYS
         code = info.get("code", "")
         name = info.get("name", "")
         market = info.get("market", "")
 
+        # Pre-compute indicators based on strategy type
+        from indicators import (calc_rsi, calc_macd, calc_ma, calc_ma_slope,
+                                calc_bollinger, calc_highest)
+        rsi = calc_rsi(df["Close"], config.RSI_PERIOD).values
+        volume = df["Volume"].values if "Volume" in df.columns else None
+
+        if sig_type == "reversal":
+            _, _, hist = calc_macd(df["Close"], config.MACD_FAST, config.MACD_SLOW, config.MACD_SIGNAL)
+            macd_v = calc_macd(df["Close"], config.MACD_FAST, config.MACD_SLOW, config.MACD_SIGNAL)[0].values
+            hist_v = hist.values
+            lb = config.LOOKBACK_DAYS
+        elif sig_type == "momentum":
+            ma20 = calc_ma(df["Close"], 20).values
+            ma60 = calc_ma(df["Close"], 60).values
+            ma20_slope = calc_ma_slope(calc_ma(df["Close"], 20), 5).values
+        elif sig_type == "breakout":
+            high60 = calc_highest(df["Close"], 60).values
+        elif sig_type == "meanrevert":
+            _, _, bb_lower = calc_bollinger(df["Close"], 20, 2.0)
+            bb_lower_v = bb_lower.values
+            bb_mid = calc_ma(df["Close"], 20).values
+
         signals = []
         for i in range(warmup, n):
-            score = _signal_score(rsi, hist, macd, i, lb)
-            stars = _score_to_stars(score)
-            if stars < self.strat.min_stars:
-                continue
             entry_price = close[i]
             if entry_price <= 0 or np.isnan(entry_price):
                 continue
-            descs = _score_to_descs(rsi, hist, macd, i, lb)
+
+            if sig_type == "reversal":
+                score = _signal_score(rsi, hist_v, macd_v, i, lb)
+                stars = _score_to_stars(score)
+                descs = _score_to_descs(rsi, hist_v, macd_v, i, lb) if stars >= self.strat.min_stars else []
+            elif sig_type == "momentum":
+                score, descs = _momentum_score(close, volume, ma20, ma60, ma20_slope, rsi, i)
+                stars = _multi_score_to_stars(score)
+            elif sig_type == "breakout":
+                score, descs = _breakout_score(close, volume, high60, rsi, i)
+                stars = _multi_score_to_stars(score)
+            elif sig_type == "meanrevert":
+                score, descs = _meanrevert_score(close, volume, bb_lower_v, bb_mid, rsi, i)
+                stars = _multi_score_to_stars(score)
+            else:
+                continue
+
+            if stars < self.strat.min_stars:
+                continue
+
             signals.append(_Signal(
                 date_str=str(dates[i].date()),
                 date_idx=i, ticker=ticker,
@@ -703,6 +882,9 @@ def main() -> tuple[list[Trade], Metrics, Strategy]:
     parser.add_argument("--early-exit-min", type=float, default=3.0)
     parser.add_argument("--max-positions", type=int, default=0,
                         help="Max concurrent positions (0 = unlimited)")
+    parser.add_argument("--signal-type", type=str, default="reversal",
+                        choices=["reversal", "momentum", "breakout", "meanrevert"],
+                        help="Signal detection strategy")
     parser.add_argument("--label", type=str, default="",
                         help="Label for output files (e.g. 'momentum', 'manual')")
     args = parser.parse_args()
@@ -716,6 +898,7 @@ def main() -> tuple[list[Trade], Metrics, Strategy]:
         early_exit_days=args.early_exit_days,
         early_exit_min_pct=args.early_exit_min,
         max_positions=args.max_positions,
+        signal_type=args.signal_type,
     )
     label = args.label
 

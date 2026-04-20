@@ -261,14 +261,17 @@ def _compact_metrics(bt: dict) -> str:
     return "\n".join(out)
 
 
-def _sec_performance(p: list[str], bt_mom, bt_man, bt_ofc) -> None:
+def _sec_performance(p: list[str], bt_rev, bt_mom, bt_brk, bt_mr) -> None:
     p.append("## 4. 策略績效儀表板")
     p.append("")
-    p.append("> 2 年歷史回測，最多同時持有 3 檔。回測驗證策略有效性。")
+    p.append("> 5 年歷史回測，每策略最多同時持 3 檔 (33% each)。")
     p.append("")
 
     for bt, title, desc in [
-        (bt_ofc, "U 型反轉三檔方案", "SL-10% · T+25% · 5★ · 40d · max 3 positions · pos 33%"),
+        (bt_rev, "U 型反轉", "SL-10% · T+25% · 5★ · 40d"),
+        (bt_mom, "動能突破", "SL-10% · T+25% · 5★ · 30d"),
+        (bt_brk, "創新高突破", "SL-5% · T+15% · 4★ · 10d"),
+        (bt_mr,  "均值回歸", "SL-8% · T+20% · 4★ · 25d"),
     ]:
         if not bt:
             continue
@@ -326,11 +329,14 @@ def _sec_performance(p: list[str], bt_mom, bt_man, bt_ofc) -> None:
 
 # ── Section 5: Full Trade Logs ───────────────────────
 
-def _sec_trade_logs(p: list[str], bt_mom, bt_man, bt_ofc) -> None:
+def _sec_trade_logs(p: list[str], bt_rev, bt_mom, bt_brk, bt_mr) -> None:
     p.append("## 5. 完整交易明細")
     p.append("")
 
-    for bt, label in [(bt_mom, "動能方案"), (bt_man, "手動精選"), (bt_ofc, "上班族三檔")]:
+    for bt, label in [
+        (bt_rev, "U 型反轉"), (bt_mom, "動能突破"),
+        (bt_brk, "創新高突破"), (bt_mr, "均值回歸"),
+    ]:
         if not bt or not bt.get("trades"):
             continue
         holding = [t for t in bt["trades"] if t.get("exit_reason") == "持倉中"]
@@ -384,7 +390,11 @@ def generate(date_str: str) -> Path:
     trades_md    = _read_md("trades")
     verification = _read_md("verification")
 
-    bt_ofc = _load_bt("office")
+    bt_rev = _load_bt("reversal")
+    bt_mom = _load_bt("momentum")
+    bt_brk = _load_bt("breakout")
+    bt_mr  = _load_bt("meanrevert")
+    bt_ofc = bt_rev  # alias for backward compat
 
     p: list[str] = []
 
@@ -412,7 +422,7 @@ def generate(date_str: str) -> Path:
     _sec_signal_scan(p, results, total_scanned)
     _sec_validation(p, fundamentals, industry)
     _sec_final_picks(p, strategy, trades_md, bt_ofc, results)
-    _sec_performance(p, None, None, bt_ofc)
+    _sec_performance(p, bt_rev, bt_mom, bt_brk, bt_mr)
 
     # Quant verification
     if verification:
@@ -425,7 +435,7 @@ def generate(date_str: str) -> Path:
         p.append("---")
         p.append("")
 
-    _sec_trade_logs(p, None, None, bt_ofc)
+    _sec_trade_logs(p, bt_rev, bt_mom, bt_brk, bt_mr)
 
     # Footer
     p.append("## 免責聲明")

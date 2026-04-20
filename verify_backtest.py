@@ -239,7 +239,7 @@ def main():
     if args.label:
         labels = [args.label]
     else:
-        labels = ["momentum", "manual", "office"]
+        labels = ["reversal", "momentum", "breakout", "meanrevert"]
 
     results = []
     for label in labels:
