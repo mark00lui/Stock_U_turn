@@ -883,7 +883,7 @@ def main() -> tuple[list[Trade], Metrics, Strategy]:
     parser.add_argument("--max-positions", type=int, default=0,
                         help="Max concurrent positions (0 = unlimited)")
     parser.add_argument("--signal-type", type=str, default="reversal",
-                        choices=["reversal", "momentum", "breakout", "meanrevert"],
+                        choices=["reversal", "momentum", "breakout"],
                         help="Signal detection strategy")
     parser.add_argument("--label", type=str, default="",
                         help="Label for output files (e.g. 'momentum', 'manual')")

@@ -5,8 +5,7 @@ Usage:
     python main.py --export                 # also export JSON for multi-agent handoff
     python main.py --strategy momentum      # momentum breakout strategy
     python main.py --strategy breakout      # N-day high breakout strategy
-    python main.py --strategy meanrevert    # Bollinger Band mean-reversion
-    python main.py --strategy all --export  # run all 4 strategies, export each
+    python main.py --strategy all --export  # run all 3 strategies, export each
 """
 import sys
 import io
@@ -26,7 +25,6 @@ STRATEGY_NAMES = {
     "reversal":   "U 型反轉 (RSI/MACD)",
     "momentum":   "動能突破 (MA Breakout)",
     "breakout":   "創新高突破 (60d High)",
-    "meanrevert": "均值回歸 (Bollinger Band)",
 }
 
 
@@ -63,10 +61,6 @@ def _detect_signals(strategy: str, df, info: dict, ticker: str) -> dict | None:
     elif strategy == "breakout":
         from signals_breakout import detect_breakout
         return detect_breakout(df)
-
-    elif strategy == "meanrevert":
-        from signals_meanrevert import detect_meanrevert
-        return detect_meanrevert(df)
 
     return None
 
@@ -135,7 +129,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="CTA Dashboard")
     parser.add_argument("--strategy", type=str, default="reversal",
-                        choices=["reversal", "momentum", "breakout", "meanrevert", "all"],
+                        choices=["reversal", "momentum", "breakout", "all"],
                         help="Signal detection strategy")
     parser.add_argument("--export", action="store_true", help="Export JSON")
     args = parser.parse_args()

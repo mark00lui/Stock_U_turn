@@ -81,12 +81,12 @@ Read outputs from Step 3. Produce UNIFIED scoring for the SAME stocks.
 - Task: Concrete trade plans with entry/stop/target/position for each
 - Output: Write to `E:/github/Stock_U_turn/data/agent_outputs/trades.md`
 
-## Step 6: Triple Backtests
+## Step 6: Triple Strategy Backtests (all min-stars=4, STRONG verdict)
 
 ```bash
-cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python backtest.py --stop-loss -8 --target 10 --max-hold 15 --min-stars 3 --position 5 --early-exit-days 10 --early-exit-min 3 --label momentum
-cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python backtest.py --stop-loss -7 --target 14 --max-hold 20 --min-stars 4 --position 12 --early-exit-days 10 --early-exit-min 6 --label manual
-cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python backtest.py --stop-loss -8 --target 20 --max-hold 30 --min-stars 4 --position 33 --label office
+cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python backtest.py --signal-type reversal --label reversal --min-stars 4 --stop-loss -7 --target 10 --max-hold 20 --position 5 --early-exit-days 10 --early-exit-min 3
+cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python backtest.py --signal-type momentum --label momentum --min-stars 4 --stop-loss -8 --target 10 --max-hold 15 --position 5 --early-exit-days 10 --early-exit-min 3
+cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python backtest.py --signal-type breakout --label breakout --min-stars 4 --stop-loss -8 --target 12 --max-hold 20 --position 5 --early-exit-days 10 --early-exit-min 4
 ```
 
 ## Step 7: Generate Daily Report + Publish

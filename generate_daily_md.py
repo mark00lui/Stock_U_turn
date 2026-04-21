@@ -1,7 +1,7 @@
-"""Generate CTA daily Markdown report — 4-Strategy Architecture.
+"""Generate CTA daily Markdown report — 3-Strategy Architecture.
 
 Sections:
-  1. 四策略掃描 — each strategy's candidates today
+  1. 三策略掃描 — each strategy's candidates today
   2. 精選三檔 — why these 3 per strategy (current holdings)
   3. 明日計畫 — buy/sell actions per strategy
   4. 策略績效 — backtest dashboards
@@ -73,20 +73,15 @@ STRATEGIES = [
         "icon": "📈", "style": "快進快出",
         "desc": "60 日新高 + 量爆 · SL-5% T+15% · 4★ · 10d",
     },
-    {
-        "key": "meanrevert", "label": "均值回歸",
-        "icon": "🔃", "style": "超賣反彈",
-        "desc": "布林下軌反彈 + RSI 低檔 · SL-8% T+20% · 4★ · 25d",
-    },
 ]
 
 
 # ── Section 1: Four Strategy Scan ────────────────────
 
 def _sec_scan(p: list[str], all_signals: dict[str, list], total_scanned: int) -> None:
-    p.append("## 1. 四策略掃描：今日候選股")
+    p.append("## 1. 三策略掃描：今日候選股")
     p.append("")
-    p.append(f"> 掃描 {total_scanned} 檔，四套策略各自偵測候選。每策略最多持 3 檔。")
+    p.append(f"> 掃描 {total_scanned} 檔，三套策略各自偵測候選（min-stars=4）。每策略最多持 3 檔。")
     p.append("")
 
     # Summary table
@@ -428,7 +423,7 @@ def generate(date_str: str) -> Path:
     # Title
     p.append(f"# CTA Daily Report — {date_str}")
     p.append("")
-    p.append("> 台股前 1000 大 · 四策略掃描 · 每策略精選 3 檔 · 收盤分析 → 次日掛單")
+    p.append("> 台股強勢股 (≥NT$50) · 三策略掃描 · min-stars=4 · 每策略精選 3 檔 · 收盤分析 → 次日掛單")
     p.append(">")
     p.append("> [GitHub](https://github.com/mark00lui/Stock_U_turn) · [Dashboard](https://mark00lui.github.io/Stock_U_turn/)")
     p.append("")
@@ -436,7 +431,7 @@ def generate(date_str: str) -> Path:
     # Navigator
     p.append("| Section | 內容 |")
     p.append("|---------|------|")
-    p.append("| 1. 四策略掃描 | 各策略偵測到的候選股 |")
+    p.append("| 1. 三策略掃描 | 各策略偵測到的候選股 |")
     p.append("| 2. 精選三檔 | 各策略當前持倉 + 選股理由 |")
     p.append("| 3. 明日計畫 | 買入候選 + 出場警示 |")
     p.append("| 4. 績效儀表板 | 5 年回測統計 |")
