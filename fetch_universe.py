@@ -6,7 +6,14 @@ import warnings
 import requests
 import urllib3
 
-from config import CACHE_DIR, TOP_N, REQUEST_DELAY
+from config import (
+    CACHE_DIR,
+    TOP_N,
+    REQUEST_DELAY,
+    MIN_PRICE,
+    EXCLUDE_CODE_PREFIXES,
+    EXCLUDE_NAME_PATTERNS,
+)
 
 # TWSE/TPEx certs sometimes lack Subject Key Identifier — suppress warning
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -82,9 +89,31 @@ def fetch_tpex_stocks() -> list[dict]:
     return stocks
 
 
+# ── Quality filter ─────────────────────────────────────
+def _passes_quality_filter(stock: dict) -> bool:
+    """Keep only 3-4位數 and 2位數 >= NT$50 strong names; drop ETFs and DR股."""
+    if stock["close"] < MIN_PRICE:
+        return False
+    code = stock["code"]
+    for prefix in EXCLUDE_CODE_PREFIXES:
+        if code.startswith(prefix):
+            return False
+    name = stock["name"]
+    for pattern in EXCLUDE_NAME_PATTERNS:
+        if pattern in name:
+            return False
+    return True
+
+
 # ── Public entry point ─────────────────────────────────
 def get_top_stocks(n: int = TOP_N) -> list[dict]:
-    """Return the top *n* stocks by trading value (TWSE + TPEx)."""
+    """Return the top *n* quality stocks by trading value (TWSE + TPEx).
+
+    Quality filter (applied BEFORE top-N cut):
+      • price >= NT$50 (focus on 3-4位數 and 50元以上 2位數)
+      • drop ETFs/bonds (code starts with "00")
+      • drop 存託憑證 (name contains "-DR")
+    """
     cache_file = CACHE_DIR / "stock_universe.json"
 
     try:
@@ -99,6 +128,15 @@ def get_top_stocks(n: int = TOP_N) -> list[dict]:
         print(f"    {len(tpex)} TPEx stocks")
 
         all_stocks = twse + tpex
+        pre_filter = len(all_stocks)
+
+        # Quality filter FIRST, then rank by trade value
+        all_stocks = [s for s in all_stocks if _passes_quality_filter(s)]
+        print(
+            f"  Quality filter: {pre_filter} → {len(all_stocks)} "
+            f"(price >= {MIN_PRICE:.0f}, no ETFs/DR)"
+        )
+
         all_stocks.sort(key=lambda s: s["trade_value"], reverse=True)
         top = all_stocks[:n]
 

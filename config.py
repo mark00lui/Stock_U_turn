@@ -9,6 +9,9 @@ OUTPUT_DIR = BASE_DIR / "output"
 
 # ── Stock universe ─────────────────────────────────────
 TOP_N = 1000
+MIN_PRICE = 50.0                  # drop sub-NT$50 names (focus on 3-4位數 strong stocks)
+EXCLUDE_CODE_PREFIXES = ("00",)   # drop ETFs/bonds (0050, 00878, 等)
+EXCLUDE_NAME_PATTERNS = ("-DR",)  # drop 存託憑證 (9105 泰金寶-DR 等)
 
 # ── RSI parameters ─────────────────────────────────────
 RSI_PERIOD = 14
