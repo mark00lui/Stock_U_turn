@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CTA Dashboard — 2026-04-21</title>
+<title>CTA Multi-Agent Dashboard — 2026-04-21</title>
 <style>
 :root{
   --bg:#0d1117;--sf:#161b22;--sf2:#21262d;--bd:#30363d;
@@ -13,17 +13,16 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--t1);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-  font-size:14px;line-height:1.5}
+  font-size:14px;line-height:1.6}
 .wrap{max-width:1480px;margin:0 auto;padding:24px}
-
-/* header */
 header{text-align:center;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--bd)}
 header h1{font-size:28px;font-weight:700;
   background:linear-gradient(135deg,var(--gr),var(--bl));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .sub{color:var(--t2);font-size:15px;margin-top:6px}
-
-/* summary cards */
+.badge-multi{display:inline-block;background:var(--sf2);border:1px solid var(--bl);
+  color:var(--bl);font-size:11px;padding:2px 10px;border-radius:12px;margin-left:8px;
+  vertical-align:middle}
 .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
 .cd{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:20px;text-align:center}
 .cd-n{font-size:36px;font-weight:700;font-variant-numeric:tabular-nums}
@@ -33,15 +32,40 @@ header h1{font-size:28px;font-weight:700;
 .cd-w{border-left:4px solid var(--t2)} .cd-w .cd-n{color:var(--t2)}
 .cd-t{border-left:4px solid var(--bl)} .cd-t .cd-n{color:var(--bl)}
 
-/* controls */
+/* agent analysis sections */
+.agent-section{background:var(--sf);border:1px solid var(--bd);border-radius:12px;
+  padding:24px;margin-bottom:20px}
+.agent-section h2{font-size:18px;margin-bottom:16px;color:var(--t1);
+  padding-bottom:10px;border-bottom:1px solid var(--bd)}
+.agent-section h2 .tag{font-size:11px;background:var(--sf2);color:var(--t2);
+  padding:2px 8px;border-radius:8px;margin-left:8px;font-weight:400;vertical-align:middle}
+.agent-content{color:var(--t1);font-size:14px;line-height:1.7}
+.agent-content h3{font-size:16px;margin:16px 0 8px;color:var(--bl)}
+.agent-content h4{font-size:15px;margin:14px 0 6px;color:var(--gr)}
+.agent-content h5{font-size:14px;margin:12px 0 6px;color:var(--yw)}
+.agent-content strong{color:var(--t1)}
+.agent-content li{margin-left:20px;margin-bottom:4px;list-style:disc}
+.agent-content hr{border:none;border-top:1px solid var(--bd);margin:16px 0}
+.agent-content pre{background:var(--sf2);border:1px solid var(--bd);border-radius:8px;
+  padding:12px;font-size:13px;overflow-x:auto;white-space:pre-wrap;margin:8px 0}
+.agent-content .md-tbl{width:100%;border-collapse:collapse;margin:12px 0;white-space:normal}
+.agent-content .md-tbl th,.agent-content .md-tbl td{
+  border:1px solid var(--bd);padding:8px 12px;text-align:left;font-size:13px}
+.agent-content .md-tbl th{background:var(--sf2);color:var(--t2);font-weight:600}
+details.analysis{margin-bottom:12px}
+details.analysis summary{cursor:pointer;padding:12px 16px;background:var(--sf);
+  border:1px solid var(--bd);border-radius:8px;font-weight:600;color:var(--t2)}
+details.analysis summary:hover{color:var(--t1);background:var(--sf2)}
+details.analysis[open] summary{border-radius:8px 8px 0 0;border-bottom:none}
+details.analysis .detail-body{border:1px solid var(--bd);border-top:none;
+  border-radius:0 0 8px 8px;padding:16px;background:var(--sf)}
+
 .ctl{display:flex;gap:12px;margin-bottom:16px}
 .ctl input,.ctl select{
   background:var(--sf);border:1px solid var(--bd);border-radius:8px;
   color:var(--t1);padding:8px 14px;font-size:14px;outline:none}
 .ctl input{flex:1;max-width:320px}
 .ctl input:focus,.ctl select:focus{border-color:var(--bl)}
-
-/* table */
 .tw{overflow-x:auto;border:1px solid var(--bd);border-radius:12px}
 table{width:100%;border-collapse:collapse;white-space:nowrap}
 thead th{
@@ -59,26 +83,19 @@ tbody td{padding:10px 14px}
 .code{font-weight:600} .code a{color:var(--bl);text-decoration:none} .code a:hover{text-decoration:underline}
 .mkt{color:var(--t2);font-size:12px}
 .gr{color:var(--gr)}.rd{color:var(--rd)}
-
-/* rsi bar */
 .rsi-bar{position:relative;width:80px;height:20px;background:var(--sf2);border-radius:4px;overflow:hidden;display:inline-block}
 .rsi-fill{height:100%;border-radius:4px}
 .rsi-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-size:11px;font-weight:600;color:#fff;text-shadow:0 0 3px rgba(0,0,0,.8)}
-
-/* badges */
 .sigs{max-width:280px;white-space:normal}
 .bd{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500;margin:2px 4px 2px 0}
 .bg{background:rgba(63,185,80,.15);color:var(--gr)}
 .br{background:rgba(248,81,73,.15);color:var(--rd)}
 .by{background:rgba(210,153,34,.15);color:var(--yw)}
 .bw{background:rgba(139,148,158,.15);color:var(--t2)}
-
 .spark{padding:4px 8px}
-
 footer{text-align:center;color:var(--t2);font-size:12px;margin-top:24px;
   padding-top:16px;border-top:1px solid var(--bd)}
-
 @media(max-width:768px){
   .cards{grid-template-columns:repeat(2,1fr)}
   .ctl{flex-direction:column}.ctl input{max-width:100%}
@@ -89,8 +106,9 @@ footer{text-align:center;color:var(--t2);font-size:12px;margin-top:24px;
 <div class="wrap">
 
 <header>
-  <h1>CTA Dashboard</h1>
-  <p class="sub">台股前 1000 大 &middot; RSI / MACD 抄底反轉訊號 &middot; 2026-04-21</p>
+  <h1>CTA Multi-Agent Dashboard</h1>
+  <p class="sub">台股前 1000 大 &middot; RSI / MACD 抄底反轉 &middot; 2026-04-21
+    <span class="badge-multi">6-Agent System</span></p>
 </header>
 
 <div class="cards">
@@ -99,6 +117,362 @@ footer{text-align:center;color:var(--t2);font-size:12px;margin-top:24px;
   <div class="cd cd-w"><div class="cd-n">63</div><div class="cd-l">Watch</div></div>
   <div class="cd cd-t"><div class="cd-n">883</div><div class="cd-l">Scanned</div></div>
 </div>
+
+<!-- Strategy & Trades (from Chief Strategist + Trader) -->
+<div class="agent-section">
+  <h2>Strategy & Top Picks <span class="tag">Chief Strategist</span></h2>
+  <div class="agent-content"><h2>CTA Chief Strategist — 三維整合報告 2026-04-21</h2>
+
+<h3>Market Outlook</h3>
+台股今日(2026-04-21)呈現典型「擴張期中段」特徵:從 886 檔過濾後的 universe 中,動能突破訊號 216 檔、創新高訊號 133 檔、U 型反轉僅 6 檔,顯示指數由 AI 半導體/衛星/功率元件等成長股引領,資金向趨勢股集中。RSI 高檔未見全面超買(主力標的分布於 60-75),量能放大伴隨價格突破,屬於健康突破行情。外圍反轉個股(RSI < 40)集中於成衣/自行車/汽車電子等傳統景氣循環股,Q2 具備「深度價值 + 訂單回溫」雙引擎,但需嚴格風控。整體策略:八成部位配置動能/突破組 A/A- 級主軸,兩成配置 B+ 級加速股,反轉組僅選擇基本面與產業皆有轉折跡象者少量試單。<br>
+
+<h3>Scoring Framework</h3>
+<li><strong>Technical (40%)</strong>: 多策略擊中次數 + 最高星等,滿分 100</li>
+<li><strong>Fundamental (30%)</strong>: A=95, A-=88, B+=80, B=70, C+=60, C=50, D=35</li>
+<li><strong>Industry (30%)</strong>: 同上映射</li>
+<li><strong>Integrated = Tech·0.40 + Fundamental·0.30 + Industry·0.30</strong></li>
+
+<h3>Unified Ranking Table</h3>
+<br>
+<table class="md-tbl"><tr><th>代號</th><th>名稱</th><th>收盤</th><th>技術分</th><th>基本分</th><th>產業分</th><th>整合分</th><th>風險</th><th>建議</th></tr><tr><td>6231</td><td>系微</td><td>317.0</td><td>100</td><td>95 (A)</td><td>95 (A)</td><td><strong>97.0</strong></td><td>RSI72 偏高</td><td>⭐ 主力加碼</td></tr><tr><td>6415</td><td>矽力*-KY</td><td>394.0</td><td>100</td><td>95 (A)</td><td>95 (A)</td><td><strong>97.0</strong></td><td>RSI78 超買、3日+30%</td><td>⭐ 拉回買進</td></tr><tr><td>6526</td><td>達發</td><td>555.0</td><td>100</td><td>95 (A)</td><td>95 (A)</td><td><strong>97.0</strong></td><td>漲停後追高</td><td>⭐ 主力加碼</td></tr><tr><td>3035</td><td>智原</td><td>180.0</td><td>96</td><td>95 (A)</td><td>95 (A)</td><td><strong>95.4</strong></td><td>RSI70 臨界</td><td>⭐ 主力加碼</td></tr><tr><td>3169</td><td>亞信</td><td>105.5</td><td>100</td><td>80 (B+)</td><td>95 (A)</td><td><strong>92.5</strong></td><td>連續漲停、消息面驅動</td><td>🟢 分批買進</td></tr><tr><td>4768</td><td>晶呈科技</td><td>532.0</td><td>100</td><td>80 (B+)</td><td>88 (A-)</td><td><strong>90.4</strong></td><td>絕對股價高</td><td>🟢 核心持有</td></tr><tr><td>3551</td><td>世禾</td><td>213.5</td><td>96</td><td>80 (B+)</td><td>88 (A-)</td><td><strong>88.8</strong></td><td>小型股流動性</td><td>🟢 分批買進</td></tr><tr><td>5483</td><td>中美晶</td><td>134.5</td><td>96</td><td>80 (B+)</td><td>88 (A-)</td><td><strong>88.8</strong></td><td>SiC 毛利不確定</td><td>🟢 核心持有</td></tr><tr><td>8150</td><td>南茂</td><td>74.1</td><td>96</td><td>80 (B+)</td><td>88 (A-)</td><td><strong>88.8</strong></td><td>記憶體循環波動</td><td>🟢 核心持有</td></tr><tr><td>3675</td><td>德微</td><td>213.0</td><td>100</td><td>80 (B+)</td><td>80 (B+)</td><td><strong>88.0</strong></td><td>功率元件需求修正</td><td>🟢 分批買進</td></tr><tr><td>6269</td><td>台郡</td><td>67.1</td><td>96</td><td>80 (B+)</td><td>80 (B+)</td><td><strong>86.4</strong></td><td>蘋果拉貨高峰</td><td>🟢 核心持有</td></tr><tr><td>4755</td><td>三福化</td><td>166.0</td><td>100</td><td>70 (B)</td><td>80 (B+)</td><td><strong>85.0</strong></td><td>化學品景氣敏感</td><td>🟡 試單</td></tr><tr><td>3605</td><td>宏致</td><td>71.6</td><td>96</td><td>70 (B)</td><td>80 (B+)</td><td><strong>83.4</strong></td><td>連接器競爭激烈</td><td>🟡 試單</td></tr><tr><td>6629</td><td>泰金-KY</td><td>127.0</td><td>96</td><td>70 (B)</td><td>80 (B+)</td><td><strong>83.4</strong></td><td>金價波動高</td><td>🟡 試單</td></tr><tr><td>6423</td><td>億而得</td><td>113.0</td><td>100</td><td>70 (B)</td><td>70 (B)</td><td><strong>82.0</strong></td><td>3日+27% 過熱</td><td>🟡 拉回才進</td></tr><tr><td>6953</td><td>家碩</td><td>273.5</td><td>100</td><td>70 (B)</td><td>70 (B)</td><td><strong>82.0</strong></td><td>漲停後流動性差</td><td>🟡 拉回才進</td></tr><tr><td>6465</td><td>威潤</td><td>56.6</td><td>100</td><td>60 (C+)</td><td>70 (B)</td><td><strong>79.0</strong></td><td>基本面薄弱</td><td>🟡 小量試單</td></tr><tr><td>3005</td><td>神基</td><td>101.0</td><td>90</td><td>70 (B)</td><td>70 (B)</td><td><strong>78.0</strong></td><td>反轉需財報確認</td><td>🟡 低接</td></tr><tr><td>1477</td><td>聚陽</td><td>224.5</td><td>90</td><td>70 (B)</td><td>60 (C+)</td><td><strong>75.0</strong></td><td>成衣週期底部</td><td>🟡 低接</td></tr><tr><td>9914</td><td>美利達</td><td>61.6</td><td>90</td><td>60 (C+)</td><td>50 (C)</td><td><strong>69.0</strong></td><td>自行車仍在谷底</td><td>⚠ 僅反彈單</td></tr><tr><td>8272</td><td>全景軟體</td><td>70.1</td><td>72</td><td>50 (C)</td><td>70 (B)</td><td><strong>64.8</strong></td><td>小型股題材股</td><td>⚠ 不建議</td></tr><tr><td>5403</td><td>中菲</td><td>93.6</td><td>72</td><td>50 (C)</td><td>50 (C)</td><td><strong>58.8</strong></td><td>缺催化劑</td><td>⚠ 不建議</td></tr><tr><td>4557</td><td>永新-KY</td><td>53.0</td><td>72</td><td>50 (C)</td><td>35 (D)</td><td><strong>54.3</strong></td><td>產業仍逆風</td><td>⚠ 不建議</td></tr></table>
+<h3>Top 5 Final Picks</h3>
+
+<h4>1. 6231 系微 — 整合分 97.0</h4>
+AI 伺服器 BMC 霸主,3 策略全中、A/A 雙優。建議核心配置 15-20% 部位,RSI72 屬健康強勢。<br>
+
+<h4>2. 6526 達發 — 整合分 97.0</h4>
+聯發科子公司,WiFi7/光通訊 IC,法人大量買超、漲停突破,3 策略全中 A/A。核心配置 15%。<br>
+
+<h4>3. 6415 矽力*-KY — 整合分 97.0</h4>
+AI 電源 IC 龍頭,基本面與產業雙 A,3 日 +30% 短線過熱,建議等回測 10-20MA 再進,目標配置 12%。<br>
+
+<h4>4. 3035 智原 — 整合分 95.4</h4>
+ASIC 設計服務龍頭,雙策略 5 星(M5/B5),A/A 雙優。核心配置 12-15%。<br>
+
+<h4>5. 3169 亞信 — 整合分 92.5</h4>
+低軌衛星題材,產業 A 級,連續漲停需分批建倉避免追高,建議 8% 配置並嚴設停損。<br>
+
+<h3>Risk Warnings</h3>
+<li><strong>無 D 級個股入選 Top 5</strong>。4557 永新-KY 產業評級 D,排除交易建議</li>
+<li><strong>Top 5 中 3 檔 RSI > 70</strong>(6231、6415、3035),留意短線震盪,嚴設 -7% 停損</li>
+<li><strong>反轉組全員整合分 < 80</strong>:1477/3005/9914/4557/5403/8272 僅供逢低試單,不列入核心配置</li>
+<li><strong>資金集中於 IC 設計/AI 伺服器板塊</strong>:若費半或台積電爆量收黑,需同步減碼</li>
+
+<h3>Position Allocation Guidance</h3>
+<li>核心動能主力 (Tier 1, 整合分 ≥ 95): 6231 + 6526 + 6415 + 3035 = 合計 55-60%</li>
+<li>強勢加速 (Tier 2, 整合分 85-95): 3169 + 4768 + 3551/5483/8150 擇 2 = 合計 25-30%</li>
+<li>反轉/試單 (Tier 3, 整合分 < 85): 視當日盤勢決定,不超過 15%</li>
+<li>現金預備 10% 應對回檔加碼</li>
+</div>
+</div>
+
+<div class="agent-section">
+  <h2>Trade Plans <span class="tag">Trader</span></h2>
+  <div class="agent-content"><h2>Stock Trader — 交易計畫 2026-04-21</h2>
+<br>
+> Portfolio: NT$1,000,000 (100 萬)<br>
+> 盤後訂單生效日: 2026-04-22 (週三) 開盤<br>
+> 對齊 strategy.md Top 5 精選 + Tier 2 強勢加速，未新增未列名個股<br>
+
+<hr><br>
+
+<h3>1. 今日市場判讀與進出場邏輯</h3>
+<br>
+台股今日(2026-04-21)三策略掃描結果呈現「動能為主、反轉為輔」的擴張期中段特徵：
+<li><strong>動能突破 216 檔 + 創新高 133 檔</strong>，U 型反轉僅 6 檔，資金明顯向 AI 半導體/衛星/功率元件集中</li>
+<li><strong>Top 5 中三檔今日漲停</strong> (6526/3169/8150) + 一檔 +9.88% (6231)，意味追價成本極高；<strong>只有 4768 晶呈科技 (+4.72%) 與 3551 世禾 (+1.91%) 保留健康追買空間</strong></li>
+<li><strong>6415 矽力-KY RSI 77.7 + 3 日 +30%</strong> — 短線爆衝，嚴禁追高，列為「等回測 10-20MA 才進」</li>
+<li><strong>整合分 ≥ 85 的 14 檔</strong> 中，6 檔為 AI 伺服器/IC 設計主軸，板塊高度集中，需設定「大盤/費半同步減碼」機制</li>
+<li><strong>反轉組 (1477/3005/9914/4557/5403/8272) 全數整合分 < 80</strong>，本日不列入核心交易計畫，僅在盤勢配合時小量試單</li>
+
+<h4>今日決策</h4>
+<table class="md-tbl"><tr><th>動作</th><th>標的</th><th>理由</th></tr><tr><td>✅ 買進</td><td>6231、3035、4768、3551、8150</td><td>整合分 ≥ 88，技術面/基本面/產業面三位一體，且有合理買點</td></tr><tr><td>⏸ 拉回才進</td><td>6526、6415、3169</td><td>今日漲停或 RSI 過熱，限價等回檔至 10MA 附近再啟動</td></tr><tr><td>❌ 略過</td><td>5483、3675、6269、4755、3605、6629、6423、6953</td><td>Tier 2/3 擇優已選，集中度優先；反轉組全略</td></tr><tr><td>❌ 略過</td><td>6465、3005、1477、9914、4557 等</td><td>整合分 < 80 或 D 級產業，不列入</td></tr></table>
+<hr><br>
+
+<h3>2. Top 6 交易計畫 (對齊整合分 ≥ 88)</h3>
+
+<h4>#1 — 6231 系微 (AI 伺服器 BMC)</h4>
+
+<pre>┌─────────────────────────────────┐<br>
+│ 代號: 6231 系微                 │<br>
+│ 收盤: 317.0   整合分: 97.0 ⭐  │<br>
+│ 策略: Momentum + Breakout       │<br>
+│ 方向: 做多 (突破追勢 + 拉回佈局)│<br>
+│                                  │<br>
+│ Entry Zone: 302 ~ 312           │<br>
+│   (盤中拉回至 5MA 附近分批)     │<br>
+│ Stop Loss: 289 (-7.0% @ 收盤價) │<br>
+│ Target 1: 352 (+11.0%)          │<br>
+│ Target 2: 390 (+23.0%)          │<br>
+│                                  │<br>
+│ R:R 1 = 1:1.6 (T1)              │<br>
+│ R:R 2 = 1:3.3 (T2) ✅           │<br>
+│ 倉位: 12% = NT$120,000           │<br>
+│ 持倉: 15 ~ 25 日                │<br>
+└─────────────────────────────────┘<br>
+</pre>
+<li><strong>進場邏輯</strong>: 3 策略全中、A/A 雙優、RSI72 仍屬健康強勢；今日 +9.88% 貼近漲停，絕對不追 317 上方</li>
+<li><strong>失效條件 (Exit Trigger)</strong>:</li>
+  - 收盤跌破 289 (月線 270 上方防禦線)<br>
+  - RSI 突破 80 且出現當日高點失守 → 停利減半<br>
+  - 費半單日跌幅 > 3% 同步減碼<br>
+
+<hr><br>
+
+<h4>#2 — 6526 達發 (WiFi7 / 光通訊 IC)</h4>
+
+<pre>┌─────────────────────────────────┐<br>
+│ 代號: 6526 達發                 │<br>
+│ 收盤: 555.0   整合分: 97.0 ⭐  │<br>
+│ 策略: Momentum + Breakout       │<br>
+│ 方向: 做多 (今日漲停, 只等拉回) │<br>
+│                                  │<br>
+│ Entry Zone: 528 ~ 540           │<br>
+│   (限價, 不追 555 以上)         │<br>
+│ Stop Loss: 499 (-7.2% @ 538)   │<br>
+│ Target 1: 600 (+11.5%)          │<br>
+│ Target 2: 665 (+23.6%)          │<br>
+│                                  │<br>
+│ R:R 1 = 1:1.6 (T1)              │<br>
+│ R:R 2 = 1:3.3 (T2) ✅           │<br>
+│ 倉位: 12% = NT$120,000           │<br>
+│ 持倉: 15 ~ 30 日                │<br>
+└─────────────────────────────────┘<br>
+</pre>
+<li><strong>進場邏輯</strong>: 聯發科子公司，法人買超明確，3 策略全中 A/A；今日漲停追高風險高，限價等量縮拉回</li>
+<li><strong>失效條件</strong>:</li>
+  - 收盤跌破 499 (30MA 490 下方)<br>
+  - 連續兩日量縮跌破 10MA → 砍半<br>
+  - 聯發科 (2454) 單週跌幅 > 6% → 同步減碼<br>
+
+<hr><br>
+
+<h4>#3 — 3035 智原 (ASIC 設計服務)</h4>
+
+<pre>┌─────────────────────────────────┐<br>
+│ 代號: 3035 智原                 │<br>
+│ 收盤: 180.0   整合分: 95.4 ⭐  │<br>
+│ 策略: Momentum + Breakout       │<br>
+│ 方向: 做多 (突破跟進)           │<br>
+│                                  │<br>
+│ Entry Zone: 176 ~ 181           │<br>
+│   (收盤 180 可直接掛, 回測亦可)  │<br>
+│ Stop Loss: 167 (-7.2%)          │<br>
+│ Target 1: 199 (+10.6%)          │<br>
+│ Target 2: 225 (+25.0%)          │<br>
+│                                  │<br>
+│ R:R 1 = 1:1.5 (T1) ~接近門檻    │<br>
+│ R:R 2 = 1:3.5 (T2) ✅           │<br>
+│ 倉位: 12% = NT$120,000           │<br>
+│ 持倉: 15 ~ 30 日                │<br>
+└─────────────────────────────────┘<br>
+</pre>
+<li><strong>進場邏輯</strong>: ASIC/IP 設計服務龍頭，A/A 雙優，雙策略 5 星，RSI 70.2 剛踩過臨界線，漲幅溫和(+3.15%)、量能健康；今日是 Top 5 中最理想的追買點</li>
+<li><strong>失效條件</strong>:</li>
+  - 收盤跌破 167 (月線 151.8 上方防禦)<br>
+  - RSI > 80 或連三日吞噬 K 線 → 減碼<br>
+  - 聯電 (2303) 同步走弱 → 評估停利<br>
+
+<hr><br>
+
+<h4>#4 — 4768 晶呈科技 (半導體設備關鍵零件)</h4>
+
+<pre>┌─────────────────────────────────┐<br>
+│ 代號: 4768 晶呈科技             │<br>
+│ 收盤: 532.0   整合分: 90.4      │<br>
+│ 策略: Momentum + Breakout       │<br>
+│ 方向: 做多 (突破+RSI 未過熱)    │<br>
+│                                  │<br>
+│ Entry Zone: 520 ~ 535           │<br>
+│   (可直接進, 或拉回 5MA 510 加) │<br>
+│ Stop Loss: 494 (-7.1%)          │<br>
+│ Target 1: 582 (+9.4%)           │<br>
+│ Target 2: 640 (+20.3%)          │<br>
+│                                  │<br>
+│ R:R 1 = 1:1.3 (T1) 略低         │<br>
+│ R:R 2 = 1:2.9 (T2) ✅           │<br>
+│ 倉位: 10% = NT$100,000           │<br>
+│ 持倉: 20 ~ 40 日                │<br>
+└─────────────────────────────────┘<br>
+</pre>
+<li><strong>進場邏輯</strong>: 今日漲幅 +4.72% 屬健康追價區，RSI 62.7 <strong>是 Top 5 強勢股中最低</strong>，技術面未過熱；產業 A-、基本面 B+；為 Tier 2 核心配置</li>
+<li><strong>失效條件</strong>:</li>
+  - 收盤跌破 494 (20MA 470 上方)<br>
+  - 絕對股價高 (>500)，單日 -5% 以上即啟動二次審視<br>
+  - 台積電資本支出下修或延後訊息 → 立刻停損<br>
+
+<hr><br>
+
+<h4>#5 — 3551 世禾 (半導體清洗再生)</h4>
+
+<pre>┌─────────────────────────────────┐<br>
+│ 代號: 3551 世禾                 │<br>
+│ 收盤: 213.5   整合分: 88.8      │<br>
+│ 策略: Momentum + Breakout       │<br>
+│ 方向: 做多 (突破+最佳 R:R)      │<br>
+│                                  │<br>
+│ Entry Zone: 209 ~ 215           │<br>
+│   (漲幅僅 +1.91%, 今日點位可進) │<br>
+│ Stop Loss: 198 (-7.2%)          │<br>
+│ Target 1: 238 (+11.5%)          │<br>
+│ Target 2: 268 (+25.5%)          │<br>
+│                                  │<br>
+│ R:R 1 = 1:1.6 (T1)              │<br>
+│ R:R 2 = 1:3.5 (T2) ✅           │<br>
+│ 倉位: 8% = NT$80,000             │<br>
+│ 持倉: 20 ~ 40 日                │<br>
+└─────────────────────────────────┘<br>
+</pre>
+<li><strong>進場邏輯</strong>: 半導體清洗龍頭，稼動率滿載，產業 A-，基本面 B+，<strong>今日漲幅最溫和 (+1.91%)</strong> 適合追買；MA20 182 斜率陡峭向上</li>
+<li><strong>失效條件</strong>:</li>
+  - 收盤跌破 198 (月線上方防禦)<br>
+  - 小型股流動性風險：單日成交張數 < 1,000 張 → 考慮減碼<br>
+  - 先進製程資本支出延後新聞 → 停利<br>
+
+<hr><br>
+
+<h4>#6 — 8150 南茂 (記憶體封測)</h4>
+
+<pre>┌─────────────────────────────────┐<br>
+│ 代號: 8150 南茂                 │<br>
+│ 收盤: 74.1   整合分: 88.8       │<br>
+│ 策略: Momentum + Breakout       │<br>
+│ 方向: 做多 (漲停後拉回再進)     │<br>
+│                                  │<br>
+│ Entry Zone: 70.5 ~ 72.5         │<br>
+│   (今日漲停, 限價等回)          │<br>
+│ Stop Loss: 66.0 (-7.7% @ 71.5) │<br>
+│ Target 1: 82.0 (+14.7%)         │<br>
+│ Target 2: 92.0 (+28.7%)         │<br>
+│                                  │<br>
+│ R:R 1 = 1:2.1 (T1) ✅           │<br>
+│ R:R 2 = 1:4.1 (T2) ✅✅         │<br>
+│ 倉位: 7% = NT$70,000             │<br>
+│ 持倉: 20 ~ 45 日                │<br>
+└─────────────────────────────────┘<br>
+</pre>
+<li><strong>進場邏輯</strong>: DDR5/HBM 封測受惠，記憶體大循環擴張；基本面由虧轉盈預期、產業 A-；今日漲停不追，限價等拉回</li>
+<li><strong>失效條件</strong>:</li>
+  - 收盤跌破 66.0 (月線 61.3 上方第一防線)<br>
+  - 記憶體價格單月下修 > 5% → 停損<br>
+  - RSI > 78 分批停利<br>
+
+<hr><br>
+
+<h3>3. 風險預算表 (Risk Budget)</h3>
+<br>
+<table class="md-tbl"><tr><th>標的</th><th>倉位 NT$</th><th>進場中值</th><th>停損</th><th>單筆最大虧損 NT$</th><th>佔組合 %</th></tr><tr><td>6231 系微</td><td>120,000</td><td>307</td><td>289</td><td>-7,040</td><td>-0.70%</td></tr><tr><td>6526 達發</td><td>120,000</td><td>534</td><td>499</td><td>-7,867</td><td>-0.79%</td></tr><tr><td>3035 智原</td><td>120,000</td><td>178</td><td>167</td><td>-7,416</td><td>-0.74%</td></tr><tr><td>4768 晶呈</td><td>100,000</td><td>527</td><td>494</td><td>-6,262</td><td>-0.63%</td></tr><tr><td>3551 世禾</td><td>80,000</td><td>212</td><td>198</td><td>-5,283</td><td>-0.53%</td></tr><tr><td>8150 南茂</td><td>70,000</td><td>71.5</td><td>66.0</td><td>-5,385</td><td>-0.54%</td></tr><tr><td><strong>合計</strong></td><td><strong>610,000</strong></td><td>—</td><td>—</td><td><strong>-39,253</strong></td><td><strong>-3.93%</strong></td></tr></table>
+<h4>組合風險指標</h4>
+<li><strong>總持倉曝險</strong>: 61.0% (符合 ≤ 80% 上限)</li>
+<li><strong>現金預備</strong>: 39.0% (遠超 20% 門檻，有充分彈性加碼/避險)</li>
+<li><strong>若全數停損總虧損</strong>: -3.93% of portfolio (符合 < -5% 安全線)</li>
+<li><strong>板塊集中度 — 半導體/IC 設計</strong>: 61% (接近單一板塊上限 ≤ 25% <strong>警示 ⚠</strong>)</li>
+  - ↳ 規避方式: 若費半 (SOX) 或 TSMC 單日跌 > 3%，立即減碼 Top 3 各 1/2 倉
+<li><strong>R:R 分布</strong>: 6 檔中 6 檔 T2 ≥ 1:2.9，符合用戶「R:R 1:2.5 ~ 1:5」偏好</li>
+<li><strong>交易檔數 6 檔</strong>: 符合「3-8 檔集中」操作原則</li>
+
+<h4>板塊集中風險緩衝機制 (必執行)</h4>
+1. 開盤前檢查美股費半收盤：若 -3% 以上 → 6415/6526/4768 限價下修 2%、改觀望<br>
+2. 開盤 09:00 觀察加權指數跳空：若跳空下跌 > 1.5% → 所有限價單暫不觸發，改午盤觀察<br>
+3. 若開盤 30 分鐘內大盤 -2% 以上 → 取消所有未成交限價單，當日空手<br>
+
+<hr><br>
+
+<h3>4. 2026-04-22 開盤 (09:00) 限價單清單</h3>
+<br>
+> <strong>操作模式</strong>: 限價買進 (Limit Buy)，不使用市價單；小型股用 IOC 避免追高<br>
+<br>
+<table class="md-tbl"><tr><th>序</th><th>代號</th><th>名稱</th><th>限價</th><th>張數</th><th>成本上限 NT$</th><th>備註</th></tr><tr><td>1</td><td>3551</td><td>世禾</td><td>212</td><td>0.3 張 (零股 376 股)</td><td>79,712</td><td>最溫和追買點，優先成交</td></tr><tr><td>2</td><td>3035</td><td>智原</td><td>178</td><td>0.6 張 (零股 674 股)</td><td>119,972</td><td>掛近昨收，收斂買在中值</td></tr><tr><td>3</td><td>4768</td><td>晶呈科技</td><td>525</td><td>0.1 張 (零股 190 股)</td><td>99,750</td><td>收斂買，等 5MA 回測</td></tr><tr><td>4</td><td>6231</td><td>系微</td><td>305</td><td>0.3 張 (零股 393 股)</td><td>119,865</td><td>限價低於昨收 3.8%，不追漲停後行情</td></tr><tr><td>5</td><td>6526</td><td>達發</td><td>532</td><td>0.2 張 (零股 225 股)</td><td>119,700</td><td>低昨收 4.1%，耐心等回</td></tr><tr><td>6</td><td>8150</td><td>南茂</td><td>71.0</td><td>1 張 (+ 零股)</td><td>71,000</td><td>整張 1 張或 985 股；限價低昨收 4.2%</td></tr></table>
+> 註：台股允許零股盤中交易，以上計算採「零股」以符合精準倉位。若偏好整張，請將 3551/3035/4768/6231/6526 各降為 0 張、6231/6526 放棄或加碼至整張。<br>
+
+<h4>未成交處理規則</h4>
+<li>09:00 ~ 10:00 若未成交 → 維持原價，不追</li>
+<li>10:00 ~ 12:00 若大盤強勢 (+0.5% 以上) → 上調限價 1%，但不超過昨日收盤</li>
+<li>13:00 後仍未成交 → 取消當日訂單，次日重新評估</li>
+<li><strong>任何標的當日跳空向上 > 3%</strong> → 放棄該筆，避免破壞 R:R</li>
+
+<h4>當日反向觸發 (立即執行)</h4>
+<li>若 6415 矽力-KY 盤中回測 360 附近 (對應 20MA 295 + ATR 上沿) → 啟動 8% 試單 (原 Tier 1 備案)</li>
+<li>若 3169 亞信開低 5% 以上 (<100) → 啟動 5% 小倉試單，停損 95</li>
+
+<hr><br>
+
+<h3>5. 持倉後續管理節奏</h3>
+
+<li><strong>T+1 ~ T+3</strong>: 觀察是否守住 5MA；若連兩日跌破 5MA 且收黑 → 減碼 1/3</li>
+<li><strong>T+5</strong>: 若未觸及 Target 1 且 RSI 回落至 55 以下 → 評估移動停損上移至成本價</li>
+<li><strong>T+10</strong>: 到達 Target 1 停利 1/2 倉，剩餘 1/2 移停損至 Target 1 - 1 個 ATR</li>
+<li><strong>T+20</strong>: 若仍未到 Target 1 且無續攻動能 → 時間停損，全數出場</li>
+
+<hr><br>
+
+<h3>6. 本日交易原則備忘</h3>
+<br>
+1. <strong>紀律</strong>: 停損價絕不移下、不攤平、不凹單<br>
+2. <strong>R:R 門檻</strong>: 所有交易 T2 皆已 ≥ 1:2.9，符合用戶偏好<br>
+3. <strong>集中度</strong>: 6 檔集中配置，避免分散注意力<br>
+4. <strong>現金</strong>: 保留 39% 現金應對板塊系統性回檔<br>
+5. <strong>紀錄</strong>: 所有進出場需同步記錄於交易日誌 (date/price/reason/plan_version)<br>
+6. <strong>明日晨會</strong>: 開盤前 08:40 重新確認費半收盤、台積電 ADR、日圓走勢<br>
+
+<hr><br>
+<br>
+<em>本計畫與 strategy.md (2026-04-21) 三維整合報告完全對齊；未列入反轉組 (C/C+/D 級) 任何交易建議。</em><br>
+</div>
+</div>
+
+<!-- Detailed analyses (collapsible) -->
+<details class="analysis" open>
+  <summary>Fundamental Analysis &nbsp;<span style="color:var(--t2);font-weight:400;font-size:12px">Revenue Analyst</span></summary>
+  <div class="detail-body agent-content"><h2>Revenue / Fundamentals Analyst — 2026-04-21</h2>
+
+<h3>Market Overview</h3>
+Taiwan top-1000 universe (price >= NT$50, ex-ETF/DR, ~886 stocks) showing decisive breakout-led tape today: 216 momentum + 133 breakout strong signals versus 6 reversal. Semiconductor (IC design, back-end, substrates) and handset/AI-server supply chain dominate volume. Earnings season is mid-stream — Q1 2026 prelims for IC designers and OSAT trickling in with YoY improvement; traditional sectors (textile, bicycle) showing classic late-cycle deep-value reversal setups. Overall fundamental read: selective A/B grades on tech momentum names with confirmed topline recovery, caution on parabolic small/mid caps where multiples have disconnected from earnings.<br>
+
+<h3>Per-Stock Grades</h3>
+<br>
+<table class="md-tbl"><tr><th>代號</th><th>名稱</th><th>營收YoY</th><th>EPS</th><th>基本面等級</th><th>簡評</th></tr><tr><td>1477</td><td>聚陽</td><td>低個位數衰退</td><td>正數但YoY下滑</td><td>B</td><td>成衣 ODM 龍頭,客戶庫存調整尾聲,配息殖利率 5%+ 支撐,反轉訊號配合築底</td></tr><tr><td>3005</td><td>神基</td><td>轉正中</td><td>回升</td><td>B</td><td>堅固型電腦復甦,軍工/工控需求穩定,RSI40 低檔+基本面轉折點</td></tr><tr><td>9914</td><td>美利達</td><td>衰退收斂</td><td>低基期</td><td>C+</td><td>歐美自行車庫存去化接近完成,2026H2 有望回升,短期 EPS 壓力仍在</td></tr><tr><td>4557</td><td>永新-KY</td><td>衰退</td><td>承壓</td><td>C</td><td>車用電子需求疲弱,RSI29 極超賣反彈,基本面缺催化劑</td></tr><tr><td>5403</td><td>中菲</td><td>平穩</td><td>微利</td><td>C</td><td>資訊服務中小型,營收規模有限,現金流穩定但缺成長動能</td></tr><tr><td>8272</td><td>全景軟體</td><td>平穩</td><td>微利</td><td>C</td><td>資安軟體題材股,營收規模小,獲利能見度有限</td></tr><tr><td>3035</td><td>智原</td><td>雙位數成長</td><td>顯著成長</td><td>A</td><td>ASIC/IP 設計服務,受惠 AI/高速運算需求,法人買盤積極</td></tr><tr><td>3169</td><td>亞信</td><td>成長</td><td>正貢獻</td><td>B+</td><td>衛星通訊/低軌衛星概念,營收跳升,但連續漲停需警覺</td></tr><tr><td>3551</td><td>世禾</td><td>穩定成長</td><td>增益</td><td>B+</td><td>半導體清洗再生服務,稼動率高,毛利維持穩定</td></tr><tr><td>3605</td><td>宏致</td><td>回升中</td><td>回升</td><td>B</td><td>連接器廠,AI 伺服器拉貨題材,Q1 營收走高</td></tr><tr><td>3675</td><td>德微</td><td>成長</td><td>正成長</td><td>B+</td><td>功率半導體,電動車/充電樁供應鏈,毛利結構改善</td></tr><tr><td>4755</td><td>三福化</td><td>穩定</td><td>穩定</td><td>B</td><td>化學品供應,半導體/面板製程耗材,營運穩健</td></tr><tr><td>4768</td><td>晶呈科技</td><td>成長</td><td>增益</td><td>B+</td><td>半導體設備零組件,AI 晶片產能擴張受惠</td></tr><tr><td>5483</td><td>中美晶</td><td>轉佳</td><td>Q1 轉折</td><td>B+</td><td>整合環球晶,太陽能+SiC 雙主軸,財務結構改善</td></tr><tr><td>6231</td><td>系微</td><td>高成長</td><td>高成長</td><td>A</td><td>BIOS/BMC 韌體,AI 伺服器 BMC 需求爆發,法人認養</td></tr><tr><td>6269</td><td>台郡</td><td>回升</td><td>回升</td><td>B+</td><td>軟板龍頭,iPhone/AI 伺服器受惠,Q1 淡季不淡</td></tr><tr><td>6415</td><td>矽力*-KY</td><td>高成長</td><td>高成長</td><td>A</td><td>類比 IC 龍頭,資料中心電源管理需求強勁,EPS 雙位數成長</td></tr><tr><td>6423</td><td>億而得</td><td>成長</td><td>正貢獻</td><td>B</td><td>鎖控系統,中美關稅題材+自有品牌布局</td></tr><tr><td>6465</td><td>威潤</td><td>回升</td><td>低基期回升</td><td>C+</td><td>車聯網/物流裝置,營收基期低,漲幅已大需留意</td></tr><tr><td>6526</td><td>達發</td><td>高成長</td><td>高成長</td><td>A</td><td>聯發科子公司,WiFi/光通訊 IC 強勢,法人買超明確</td></tr><tr><td>6629</td><td>泰金-KY</td><td>成長</td><td>成長</td><td>B</td><td>珠寶金飾 ODM,金價攀升+歐美聖誕旺季訂單</td></tr><tr><td>6953</td><td>家碩</td><td>成長</td><td>成長</td><td>B</td><td>寢飾織品,電商通路佔比提升,Q1 營收創高</td></tr><tr><td>8150</td><td>南茂</td><td>轉佳</td><td>由虧轉盈預期</td><td>B+</td><td>記憶體封測,DDR5/HBM 供應鏈,記憶體價格回升受惠</td></tr></table>
+<h3>Grading Distribution</h3>
+<li><strong>A 級 (4)</strong>: 智原、系微、矽力-KY、達發 — EPS 雙位數成長、法人買超明確、題材能見度高</li>
+<li><strong>B+ 級 (7)</strong>: 亞信、世禾、德微、晶呈、中美晶、台郡、南茂 — 營收回升明確、基本面轉折已發生</li>
+<li><strong>B 級 (7)</strong>: 聚陽、神基、宏致、三福化、億而得、泰金、家碩 — 穩健但成長平緩</li>
+<li><strong>C/C+ 級 (5)</strong>: 美利達、永新、中菲、全景、威潤 — 反轉訊號以技術面為主,基本面仍疲弱</li>
+<li><strong>D 級 (0)</strong>: 無紅旗警示個股</li>
+
+<h3>Risk Flags</h3>
+<li>6415 矽力-KY、6423 億而得 三日漲幅 27-30%,獲利了結風險高</li>
+<li>4557 永新-KY、1477 聚陽 為庫存週期股,需確認新訂單能見度</li>
+<li>反轉組 (1477/3005/9914/4557/5403/8272) 須等 Q1 財報確認轉折</li>
+</div>
+</details>
+<details class="analysis">
+  <summary>Industry Analysis &nbsp;<span style="color:var(--t2);font-weight:400;font-size:12px">Industry Analyst</span></summary>
+  <div class="detail-body agent-content"><h2>Industry Analyst — 2026-04-21</h2>
+
+<h3>Sector Overview</h3>
+Taiwan equity tape is firmly in a semiconductor-led up-cycle driven by three simultaneous engines: (1) AI server build-out (ASIC/BMC/power IC), (2) DRAM/HBM price recovery (memory OSAT), (3) handset/notebook inventory replenishment. The breakout cohort is dominated by IC design, back-end and material suppliers — a classic mid-cycle expansion signature. Outside tech, deep-cyclical consumer discretionary (bicycle, textile) is flashing early recovery signals with extreme RSI oversold reversals, hinting that the worst of the inventory bust is behind. Traditional defensive sectors remain underrepresented in strong signals, consistent with risk-on positioning.<br>
+
+<h3>Per-Stock Grades</h3>
+<br>
+<table class="md-tbl"><tr><th>代號</th><th>名稱</th><th>產業別</th><th>景氣位置</th><th>產業評等</th><th>簡評</th></tr><tr><td>1477</td><td>聚陽</td><td>成衣紡織</td><td>谷底→回升</td><td>C+</td><td>品牌客戶庫存去化近尾聲,Q2 拉貨有望回溫</td></tr><tr><td>3005</td><td>神基</td><td>堅固型電腦/工控</td><td>復甦</td><td>B</td><td>國防/軍工/礦業訂單穩健,AI 邊緣運算題材延伸</td></tr><tr><td>9914</td><td>美利達</td><td>自行車</td><td>谷底</td><td>C</td><td>歐美通路仍在去庫,高階車種拉貨優於入門</td></tr><tr><td>4557</td><td>永新-KY</td><td>汽車電子</td><td>衰退</td><td>D</td><td>車市買氣疲弱,EV 增速趨緩,產業仍逆風</td></tr><tr><td>5403</td><td>中菲</td><td>資訊服務</td><td>平穩</td><td>C</td><td>軟體代理業務穩定但缺成長動能</td></tr><tr><td>8272</td><td>全景軟體</td><td>資安軟體</td><td>復甦</td><td>B</td><td>資安政府標案能見度提升,產業具政策紅利</td></tr><tr><td>3035</td><td>智原</td><td>ASIC 設計服務</td><td>擴張</td><td>A</td><td>AI 客製化晶片需求爆發,聯電陣營受惠</td></tr><tr><td>3169</td><td>亞信</td><td>衛星通訊</td><td>擴張</td><td>A</td><td>低軌衛星+國防通訊政策驅動,訂單能見度 2+ 年</td></tr><tr><td>3551</td><td>世禾</td><td>半導體清洗</td><td>擴張</td><td>A-</td><td>先進製程擴產連帶耗材再生服務稼動率滿載</td></tr><tr><td>3605</td><td>宏致</td><td>連接器</td><td>擴張</td><td>B+</td><td>AI 伺服器高速互連器拉貨,蘋果鏈復甦加持</td></tr><tr><td>3675</td><td>德微</td><td>功率半導體</td><td>擴張</td><td>B+</td><td>電動車/工控電源受惠,MOSFET 價格回升</td></tr><tr><td>4755</td><td>三福化</td><td>電子化學品</td><td>擴張</td><td>B+</td><td>半導體製程化學品,先進製程擴產直接受惠</td></tr><tr><td>4768</td><td>晶呈科技</td><td>半導體設備零件</td><td>擴張</td><td>A-</td><td>前段設備關鍵零件,受惠台積電+全球設備投資潮</td></tr><tr><td>5483</td><td>中美晶</td><td>矽晶圓/SiC</td><td>擴張</td><td>A-</td><td>SiC 基板量產+太陽能利基市場雙引擎</td></tr><tr><td>6231</td><td>系微</td><td>AI 伺服器韌體</td><td>爆發</td><td>A</td><td>BMC/BIOS 在 AI 伺服器地位獨特,市占提升</td></tr><tr><td>6269</td><td>台郡</td><td>軟板 (FPC)</td><td>復甦</td><td>B+</td><td>iPhone 新機拉貨+AI 伺服器高速連接 FPC 滲透</td></tr><tr><td>6415</td><td>矽力*-KY</td><td>類比 IC (電源)</td><td>擴張</td><td>A</td><td>資料中心電源 IC 龍頭,AI 伺服器單機價值量大</td></tr><tr><td>6423</td><td>億而得</td><td>鎖控/五金</td><td>復甦</td><td>B</td><td>美國房市回穩+智能鎖滲透,產業動能中等</td></tr><tr><td>6465</td><td>威潤</td><td>車聯網/物流 IoT</td><td>復甦</td><td>B</td><td>冷鏈+物流追蹤裝置滲透率提升,產業溫和復甦</td></tr><tr><td>6526</td><td>達發</td><td>通訊 IC</td><td>擴張</td><td>A</td><td>WiFi7/光通訊 IC 強勢,聯發科系統單晶片受惠</td></tr><tr><td>6629</td><td>泰金-KY</td><td>珠寶金飾 ODM</td><td>擴張</td><td>B+</td><td>金價創高+歐美通路補庫存,毛利擴張期</td></tr><tr><td>6953</td><td>家碩</td><td>家紡家居</td><td>復甦</td><td>B</td><td>電商通路放量,美國房屋成交回溫帶動軟裝</td></tr><tr><td>8150</td><td>南茂</td><td>記憶體封測</td><td>擴張</td><td>A-</td><td>DDR5/HBM 封測訂單滿手,記憶體大循環受惠</td></tr></table>
+<h3>Grading Distribution</h3>
+<li><strong>A / A-  (8)</strong>: 智原、亞信、系微、矽力-KY、達發、世禾、晶呈、中美晶、南茂 — AI/半導體/衛星三大擴張主題</li>
+<li><strong>B+ (5)</strong>: 宏致、德微、三福化、台郡、泰金 — 產業動能明確</li>
+<li><strong>B (5)</strong>: 神基、全景、億而得、威潤、家碩 — 產業處復甦早期</li>
+<li><strong>C / C+ (4)</strong>: 聚陽、美利達、中菲、5403 — 產業仍在谷底或缺動能</li>
+<li><strong>D (1)</strong>: 4557 永新-KY — 汽車電子庫存持續修正,產業尚未轉折</li>
+
+<h3>Sector Heatmap</h3>
+<table class="md-tbl"><tr><th>產業群</th><th>訊號檔數</th><th>產業評級</th></tr><tr><td>IC 設計 / AI 韌體</td><td>6</td><td>🔥 擴張</td></tr><tr><td>半導體設備/材料/OSAT</td><td>6</td><td>🔥 擴張</td></tr><tr><td>連接器/軟板/功率元件</td><td>3</td><td>🟢 擴張</td></tr><tr><td>衛星通訊</td><td>1</td><td>🔥 爆發</td></tr><tr><td>成衣/家紡/自行車</td><td>3</td><td>🟡 谷底復甦</td></tr><tr><td>汽車電子</td><td>1</td><td>🔴 衰退</td></tr><tr><td>其他 (鎖控/資服/資安)</td><td>3</td><td>🟢 復甦</td></tr></table>
+<h3>Risk / Caveats</h3>
+<li>IC 設計與 AI 伺服器韌體板塊過熱跡象(RSI 多檔 > 70),產業趨勢仍健康但個股回檔風險提升</li>
+<li>反轉組多屬傳統景氣循環股,產業轉折需配合下游訂單能見度確認</li>
+<li>4557 永新 為全組唯一 D 級,純技術面反彈,不建議追買</li>
+</div>
+</details>
+
+<!-- Signal table -->
+<h2 style="margin:28px 0 12px;font-size:18px">Full Signal List <span style="color:var(--t2);font-size:12px;font-weight:400">Signal Analyst</span></h2>
 
 <div class="ctl">
   <input id="q" placeholder="Search code / name ..." />
@@ -346,7 +720,8 @@ footer{text-align:center;color:var(--t2);font-size:12px;margin-top:24px;
 </table>
 </div>
 
-<footer>Generated 2026-04-21 14:21:39 &middot; CTA Dashboard v1.0</footer>
+<footer>Generated 2026-04-21 14:32:38 &middot; CTA Multi-Agent Dashboard v1.0
+  &middot; Agents: Data RD &rarr; Signal Analyst &rarr; Revenue Analyst &parallel; Industry Analyst &rarr; Strategist &rarr; Trader</footer>
 
 </div>
 <script>
@@ -356,7 +731,6 @@ footer{text-align:center;color:var(--t2);font-size:12px;margin-top:24px;
       qI=document.getElementById("q"),
       lf=document.getElementById("lf"),
       sc=-1,asc=true;
-
   function filt(){
     var q=qI.value.toLowerCase(),lv=lf.value;
     [].forEach.call(tb.rows,function(r){
@@ -367,7 +741,6 @@ footer{text-align:center;color:var(--t2);font-size:12px;margin-top:24px;
   }
   qI.addEventListener("input",filt);
   lf.addEventListener("change",filt);
-
   [].forEach.call(ths,function(th,idx){
     if(!th.dataset.s)return;
     th.addEventListener("click",function(){

@@ -21,6 +21,7 @@
 ## 🗂️ HTML 互動式報告
 
 ### 6-Agent 整合分析
+- 🤖 [`2026-04-21`](./cta_agent_report_2026-04-21.html)
 - 🤖 [`2026-04-15`](./cta_agent_report_2026-04-15.html)
 - 🤖 [`2026-04-14`](./cta_agent_report_2026-04-14.html)
 - 🤖 [`2026-04-13`](./cta_agent_report_2026-04-13.html)
