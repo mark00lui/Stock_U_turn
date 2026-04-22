@@ -1,25 +1,52 @@
-"""Momentum signal detection — MA breakout + volume surge + trend confirmation."""
+"""Momentum signal detection — MA breakout + volume gate + trend confirmation."""
 import pandas as pd
 import numpy as np
 from indicators import calc_ma, calc_ma_slope, calc_volume_ratio, calc_rsi, calc_atr
+from config import VOLUME_RATIO_GATE, MIN_DAILY_VALUE_NTD, MIN_HISTORY_DAYS
 
 
 def detect_momentum(df: pd.DataFrame) -> dict | None:
-    """Score a stock for momentum breakout signals.
+    """Score a stock for momentum breakout signals with volume gate.
 
-    Conditions:
-    1. Price above 20MA AND 20MA trending up (slope > 0)
-    2. Volume above 1.5x 20-day average
-    3. RSI in momentum zone (50-70, not overbought)
-    4. Price broke above 20MA within last 5 days (fresh breakout)
+    Hard gates (fail any → return None):
+      A. >= 60 days of history
+      B. 20-day avg daily value >= NT$3億 (liquidity floor)
+      C. volume_ratio (today / 20d avg) >= 1.2x (volume confirmation)
+
+    Scoring (after gates pass):
+      1. Price above 20MA (+1), fresh breakout (+1.5)
+      2. 20MA trending up (+1)
+      3. Volume surge bonus (+1 if >=1.5x, +0.5 if >=2.5x)
+      4. RSI in momentum zone 50-70 (+0.5); >70 penalty (-0.5)
+      5. Above 60MA long-term trend (+0.5)
 
     Returns dict with scoring info, or None if no signal.
     """
-    if len(df) < 30:
-        return None
+    if len(df) < MIN_HISTORY_DAYS:
+        return None  # Gate A — new listing guard
 
     close = df["Close"]
     volume = df["Volume"] if "Volume" in df.columns else None
+    if volume is None:
+        return None
+
+    # Gate B + C — volume & liquidity computed first (cheap, short-circuit)
+    vol_recent = volume.iloc[-20:].replace(0, np.nan)
+    avg_vol = vol_recent.mean()
+    if pd.isna(avg_vol) or avg_vol <= 0:
+        return None
+    vol_now = volume.iloc[-1]
+    if pd.isna(vol_now) or vol_now == 0:
+        return None
+    volume_ratio = vol_now / avg_vol
+    if volume_ratio < VOLUME_RATIO_GATE:
+        return None  # Gate C — volume confirmation fails
+
+    # 20-day avg daily value (price × volume) in TWD
+    price_recent = close.iloc[-20:]
+    daily_value_avg = (price_recent * vol_recent).mean()
+    if pd.isna(daily_value_avg) or daily_value_avg < MIN_DAILY_VALUE_NTD:
+        return None  # Gate B — liquidity floor fails
 
     ma20 = calc_ma(close, 20)
     ma60 = calc_ma(close, 60)
