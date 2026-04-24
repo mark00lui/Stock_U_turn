@@ -146,30 +146,48 @@ def _score_to_descs(rsi_arr, hist_arr, macd_arr, i: int, lb: int) -> list[str]:
 # ── Multi-strategy signal detection at index i ───────
 
 def _momentum_score(close, volume, ma20, ma60, ma20_slope, rsi, i):
-    """Momentum signal score at index i — with volume gate mirroring signals_momentum.py."""
-    from config import VOLUME_RATIO_GATE, MIN_DAILY_VALUE_NTD, MIN_HISTORY_DAYS
+    """Momentum signal score at index i — 20日主閘+6月地板 volume gate (mirrors signals_momentum.py)."""
+    from config import (
+        VOLUME_RATIO_GATE, VOLUME_RATIO_6M_FLOOR,
+        MIN_DAILY_VALUE_NTD, MIN_DAILY_VALUE_MA120, MIN_HISTORY_DAYS,
+    )
     if i < MIN_HISTORY_DAYS or np.isnan(close[i]) or np.isnan(ma20[i]) or np.isnan(rsi[i]):
         return 0, []
     if volume is None:
         return 0, []
 
-    # Volume & liquidity gates (short-circuit before scoring)
-    vol_window = volume[max(0, i - 20):i]
-    vol_window = np.where(vol_window == 0, np.nan, vol_window)
-    avg_vol = np.nanmean(vol_window) if len(vol_window) >= 15 else np.nan
-    if np.isnan(avg_vol) or avg_vol <= 0:
-        return 0, []
     vol_now = volume[i]
-    if np.isnan(vol_now) or vol_now == 0:
+    c_now = close[i]
+    if np.isnan(vol_now) or vol_now == 0 or np.isnan(c_now):
         return 0, []
-    volume_ratio = vol_now / avg_vol
-    if volume_ratio < VOLUME_RATIO_GATE:
-        return 0, []  # Volume gate fail
 
-    close_window = close[max(0, i - 20):i]
-    daily_value_avg = np.nanmean(close_window * vol_window)
-    if np.isnan(daily_value_avg) or daily_value_avg < MIN_DAILY_VALUE_NTD:
-        return 0, []  # Liquidity gate fail
+    # Gate B1 — today daily value
+    if (c_now * vol_now) < MIN_DAILY_VALUE_NTD:
+        return 0, []
+
+    # Gate C1 — 20d volume ratio (primary)
+    vol_20 = volume[max(0, i - 20):i]
+    vol_20 = np.where(vol_20 == 0, np.nan, vol_20)
+    ma20_vol = np.nanmean(vol_20) if len(vol_20) >= 15 else np.nan
+    if np.isnan(ma20_vol) or ma20_vol <= 0:
+        return 0, []
+    if (vol_now / ma20_vol) < VOLUME_RATIO_GATE:
+        return 0, []
+
+    # Gate C2 — 6-month volume floor
+    vol_120 = volume[max(0, i - 120):i]
+    vol_120 = np.where(vol_120 == 0, np.nan, vol_120)
+    ma120_vol = np.nanmean(vol_120) if len(vol_120) >= 100 else np.nan
+    if np.isnan(ma120_vol) or ma120_vol <= 0:
+        return 0, []
+    if vol_now < ma120_vol * VOLUME_RATIO_6M_FLOOR:
+        return 0, []
+
+    # Gate B2 — MA120 daily value
+    close_120 = close[max(0, i - 120):i]
+    dv_120 = np.nanmean(close_120 * vol_120)
+    if np.isnan(dv_120) or dv_120 < MIN_DAILY_VALUE_MA120:
+        return 0, []
 
     c = close[i]
     score = 0.0
@@ -211,29 +229,43 @@ def _momentum_score(close, volume, ma20, ma60, ma20_slope, rsi, i):
 
 
 def _breakout_score(close, volume, high60, rsi, i):
-    """Breakout signal score at index i — with volume gate mirroring signals_breakout.py."""
-    from config import VOLUME_RATIO_GATE, MIN_DAILY_VALUE_NTD, MIN_HISTORY_DAYS
+    """Breakout signal score at index i — 20日主閘+6月地板 volume gate (mirrors signals_breakout.py)."""
+    from config import (
+        VOLUME_RATIO_GATE, VOLUME_RATIO_6M_FLOOR,
+        MIN_DAILY_VALUE_NTD, MIN_DAILY_VALUE_MA120, MIN_HISTORY_DAYS,
+    )
     if i < max(65, MIN_HISTORY_DAYS) or np.isnan(close[i]) or np.isnan(high60[i]) or np.isnan(rsi[i]):
         return 0, []
     if volume is None:
         return 0, []
 
-    # Volume & liquidity gates
-    vol_window = volume[max(0, i - 20):i]
-    vol_window = np.where(vol_window == 0, np.nan, vol_window)
-    avg_vol = np.nanmean(vol_window) if len(vol_window) >= 15 else np.nan
-    if np.isnan(avg_vol) or avg_vol <= 0:
-        return 0, []
     vol_now = volume[i]
-    if np.isnan(vol_now) or vol_now == 0:
-        return 0, []
-    volume_ratio = vol_now / avg_vol
-    if volume_ratio < VOLUME_RATIO_GATE:
+    c_now = close[i]
+    if np.isnan(vol_now) or vol_now == 0 or np.isnan(c_now):
         return 0, []
 
-    close_window = close[max(0, i - 20):i]
-    daily_value_avg = np.nanmean(close_window * vol_window)
-    if np.isnan(daily_value_avg) or daily_value_avg < MIN_DAILY_VALUE_NTD:
+    if (c_now * vol_now) < MIN_DAILY_VALUE_NTD:
+        return 0, []
+
+    vol_20 = volume[max(0, i - 20):i]
+    vol_20 = np.where(vol_20 == 0, np.nan, vol_20)
+    ma20_vol = np.nanmean(vol_20) if len(vol_20) >= 15 else np.nan
+    if np.isnan(ma20_vol) or ma20_vol <= 0:
+        return 0, []
+    if (vol_now / ma20_vol) < VOLUME_RATIO_GATE:
+        return 0, []
+
+    vol_120 = volume[max(0, i - 120):i]
+    vol_120 = np.where(vol_120 == 0, np.nan, vol_120)
+    ma120_vol = np.nanmean(vol_120) if len(vol_120) >= 100 else np.nan
+    if np.isnan(ma120_vol) or ma120_vol <= 0:
+        return 0, []
+    if vol_now < ma120_vol * VOLUME_RATIO_6M_FLOOR:
+        return 0, []
+
+    close_120 = close[max(0, i - 120):i]
+    dv_120 = np.nanmean(close_120 * vol_120)
+    if np.isnan(dv_120) or dv_120 < MIN_DAILY_VALUE_MA120:
         return 0, []
 
     c = close[i]

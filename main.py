@@ -134,7 +134,7 @@ def main() -> None:
     parser.add_argument("--export", action="store_true", help="Export JSON")
     args = parser.parse_args()
 
-    from fetch_universe import get_top_stocks
+    from fetch_universe import get_top_stocks, apply_liquidity_filter
     from fetch_prices import fetch_prices
 
     today = date.today().isoformat()
@@ -142,27 +142,30 @@ def main() -> None:
 
     print("=" * 60)
     print("  CTA Dashboard — Multi-Strategy Scanner")
-    print(f"  台股前 {config.TOP_N} 大  ·  {today}")
+    print(f"  台股 capital≥30億 OR mktcap≥150億 composite universe  ·  {today}")
     print(f"  Strategies: {', '.join(strategies)}")
     print("=" * 60)
 
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    print("\n[1/4] Fetching stock universe ...")
+    print("\n[1/5] Fetching stock universe (Stage 1: capital/mktcap) ...")
     stocks = get_top_stocks()
 
-    print("\n[2/4] Downloading historical prices ...")
+    print("\n[2/5] Downloading historical prices ...")
     prices = fetch_prices(stocks)
 
-    print("\n[3/4] Calculating indicators & signals ...")
+    print("\n[3/5] Stage 2 liquidity filter (20d + 6m daily value) ...")
+    stocks, prices = apply_liquidity_filter(stocks, prices)
+
+    print("\n[4/5] Calculating indicators & signals ...")
     all_results = {}
     for strat in strategies:
         results = run_strategy(strat, stocks, prices, today, export=args.export)
         all_results[strat] = results
 
     # HTML report (reversal is the primary)
-    print("\n[4/4] Generating HTML report ...")
+    print("\n[5/5] Generating HTML report ...")
     primary = all_results.get("reversal", list(all_results.values())[0])
     from report import generate_report
     out = generate_report(primary, len(prices), today)
