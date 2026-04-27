@@ -1,4 +1,6 @@
-data/
+data/*
+!data/active_etf/
+!data/agent_outputs/
 __pycache__/
 *.pyc
 *.pyo
