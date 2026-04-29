@@ -40,6 +40,55 @@ def _check_deps() -> None:
         sys.exit(1)
 
 
+def _validate_price_freshness(prices: dict, today_str: str, max_stale_pct: float = 10.0) -> None:
+    """Verify per-ticker last-bar date is recent enough.
+
+    A ticker is "stale" if its last bar is older than today (or, on weekends,
+    older than the previous Friday). Aborts the run if more than ``max_stale_pct``
+    percent of tickers are stale — almost always means yfinance batch failed
+    or the system clock is wrong.
+    """
+    from datetime import date as _date, timedelta
+    import pandas as _pd
+
+    today = _date.fromisoformat(today_str)
+    # Roll back to last weekday for weekend/holiday tolerance
+    expected = today
+    while expected.weekday() >= 5:  # Sat=5, Sun=6
+        expected -= timedelta(days=1)
+
+    stale: list[tuple[str, str]] = []
+    fresh = 0
+    for ticker, df in prices.items():
+        if df is None or len(df) == 0:
+            stale.append((ticker, "empty"))
+            continue
+        last_idx = df.index[-1]
+        if isinstance(last_idx, _pd.Timestamp):
+            last_date = last_idx.date()
+        else:
+            last_date = _date.fromisoformat(str(last_idx)[:10])
+        if last_date < expected:
+            stale.append((ticker, str(last_date)))
+        else:
+            fresh += 1
+
+    total = len(prices)
+    stale_pct = (len(stale) / total * 100) if total else 0
+    print(f"  Freshness check: {fresh}/{total} fresh @ ≥ {expected}, "
+          f"{len(stale)} stale ({stale_pct:.1f}%)")
+
+    if stale_pct > max_stale_pct:
+        print(f"  [ERROR] {stale_pct:.1f}% stale exceeds {max_stale_pct}% threshold")
+        print("  Sample stale tickers (first 10):")
+        for t, d in stale[:10]:
+            print(f"    {t}: last_date={d}")
+        print("  Aborting — re-run after the cache refreshes (delete prices_*.pkl if needed).")
+        sys.exit(2)
+    elif stale:
+        print(f"  [WARN] {len(stale)} tickers stale but under {max_stale_pct}% threshold; continuing")
+
+
 def _detect_signals(strategy: str, df, info: dict, ticker: str) -> dict | None:
     """Route to the correct signal detector."""
     if strategy == "reversal":
@@ -128,9 +177,9 @@ def main() -> None:
     _check_deps()
 
     parser = argparse.ArgumentParser(description="CTA Dashboard")
-    parser.add_argument("--strategy", type=str, default="reversal",
+    parser.add_argument("--strategy", type=str, default="all",
                         choices=["reversal", "momentum", "breakout", "all"],
-                        help="Signal detection strategy")
+                        help="Signal detection strategy (default: all — runs all 3)")
     parser.add_argument("--export", action="store_true", help="Export JSON")
     args = parser.parse_args()
 
@@ -154,6 +203,9 @@ def main() -> None:
 
     print("\n[2/5] Downloading historical prices ...")
     prices = fetch_prices(stocks)
+
+    print("\n[2.5/5] Validating price freshness ...")
+    _validate_price_freshness(prices, today)
 
     print("\n[3/5] Stage 2 liquidity filter (20d + 6m daily value) ...")
     stocks, prices = apply_liquidity_filter(stocks, prices)
