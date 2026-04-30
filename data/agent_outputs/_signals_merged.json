@@ -1,0 +1,1450 @@
+[
+  {
+    "code": "6197",
+    "name": "佳必琪",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 208.0,
+        "pct_change": 0.73,
+        "rsi": 69.3,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "20MA上升(+3.3%)",
+          "量增2.3x",
+          "動能區RSI69",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 5,
+        "close": 208.0,
+        "pct_change": 0.73,
+        "rsi": 69.3,
+        "descriptions": [
+          "創60日新高",
+          "量增2.3x",
+          "RSI69未超買",
+          "3日漲16.9%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "5443",
+    "name": "均豪",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 129.5,
+        "pct_change": 6.15,
+        "rsi": 66.0,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "20MA上升(+3.3%)",
+          "量增2.3x",
+          "動能區RSI66",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 5,
+        "close": 129.5,
+        "pct_change": 6.15,
+        "rsi": 66.0,
+        "descriptions": [
+          "創60日新高",
+          "量增2.3x",
+          "RSI66未超買",
+          "3日漲21.6%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "6706",
+    "name": "惠特",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 151.5,
+        "pct_change": 3.06,
+        "rsi": 60.9,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "20MA上升(+2.1%)",
+          "量增2.2x",
+          "動能區RSI61",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 5,
+        "close": 151.5,
+        "pct_change": 3.06,
+        "rsi": 60.9,
+        "descriptions": [
+          "創60日新高",
+          "量增2.2x",
+          "RSI61未超買",
+          "3日漲24.2%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "4766",
+    "name": "南寶",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 358.5,
+        "pct_change": 1.27,
+        "rsi": 61.4,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+2.0%)",
+          "量增4.2x",
+          "爆量",
+          "動能區RSI61",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 358.5,
+        "pct_change": 1.27,
+        "rsi": 61.4,
+        "descriptions": [
+          "接近60日高",
+          "量增4.2x",
+          "RSI61未超買",
+          "3日漲4.8%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3707",
+    "name": "漢磊",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 66.2,
+        "pct_change": 9.97,
+        "rsi": 64.5,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+2.6%)",
+          "量增3.8x",
+          "爆量",
+          "動能區RSI65",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 5,
+        "close": 66.2,
+        "pct_change": 9.97,
+        "rsi": 64.5,
+        "descriptions": [
+          "創60日新高",
+          "量增3.8x",
+          "RSI65未超買",
+          "3日漲17.2%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3680",
+    "name": "家登",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 537.0,
+        "pct_change": 7.19,
+        "rsi": 69.7,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+5.2%)",
+          "量增2.2x",
+          "動能區RSI70",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 5,
+        "close": 537.0,
+        "pct_change": 7.19,
+        "rsi": 69.7,
+        "descriptions": [
+          "創60日新高",
+          "量增2.2x",
+          "RSI70未超買",
+          "3日漲19.6%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3167",
+    "name": "大量",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 861.0,
+        "pct_change": 5.77,
+        "rsi": 75.8,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+17.9%)",
+          "量增3.0x",
+          "爆量",
+          "超買RSI76",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 5,
+        "close": 861.0,
+        "pct_change": 5.77,
+        "rsi": 75.8,
+        "descriptions": [
+          "創60日新高",
+          "量增3.0x",
+          "RSI76",
+          "3日漲27.6%",
+          "波動擴張"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2233",
+    "name": "宇隆",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 300.0,
+        "pct_change": 9.89,
+        "rsi": 75.1,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+3.7%)",
+          "量增4.1x",
+          "爆量",
+          "超買RSI75",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 5,
+        "close": 300.0,
+        "pct_change": 9.89,
+        "rsi": 75.1,
+        "descriptions": [
+          "創60日新高",
+          "量增4.1x",
+          "RSI75",
+          "3日漲21.5%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3455",
+    "name": "由田",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 243.0,
+        "pct_change": 1.67,
+        "rsi": 75.0,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+13.9%)",
+          "量增2.8x",
+          "爆量",
+          "超買RSI75",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 5,
+        "close": 243.0,
+        "pct_change": 1.67,
+        "rsi": 75.0,
+        "descriptions": [
+          "創60日新高",
+          "量增2.8x",
+          "RSI75",
+          "3日漲22.7%",
+          "波動擴張"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3605",
+    "name": "宏致",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 87.1,
+        "pct_change": 5.58,
+        "rsi": 79.1,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+9.2%)",
+          "量增3.4x",
+          "爆量",
+          "超買RSI79",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 5,
+        "close": 87.1,
+        "pct_change": 5.58,
+        "rsi": 79.1,
+        "descriptions": [
+          "創60日新高",
+          "量增3.4x",
+          "RSI79",
+          "3日漲13.9%",
+          "波動擴張"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "5269",
+    "name": "祥碩",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 1365.0,
+        "pct_change": 4.6,
+        "rsi": 62.9,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+3.6%)",
+          "量增2.2x",
+          "動能區RSI63",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 1365.0,
+        "pct_change": 4.6,
+        "rsi": 62.9,
+        "descriptions": [
+          "接近60日高",
+          "量增2.2x",
+          "RSI63未超買",
+          "3日漲5.8%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2467",
+    "name": "志聖",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 609.0,
+        "pct_change": 9.93,
+        "rsi": 67.3,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+7.2%)",
+          "量增1.8x",
+          "動能區RSI67",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 609.0,
+        "pct_change": 9.93,
+        "rsi": 67.3,
+        "descriptions": [
+          "創60日新高",
+          "微量增1.8x",
+          "RSI67未超買",
+          "3日漲22.9%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3532",
+    "name": "台勝科",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 189.0,
+        "pct_change": 4.13,
+        "rsi": 63.5,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+6.6%)",
+          "量增2.4x",
+          "動能區RSI63",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 189.0,
+        "pct_change": 4.13,
+        "rsi": 63.5,
+        "descriptions": [
+          "接近60日高",
+          "量增2.4x",
+          "RSI63未超買",
+          "3日漲3.8%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "6937",
+    "name": "天虹",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 331.0,
+        "pct_change": 9.97,
+        "rsi": 65.1,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+4.4%)",
+          "量增2.3x",
+          "動能區RSI65",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 331.0,
+        "pct_change": 9.97,
+        "rsi": 65.1,
+        "descriptions": [
+          "接近60日高",
+          "量增2.3x",
+          "RSI65未超買",
+          "3日漲12.0%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2486",
+    "name": "一詮",
+    "strategies": [
+      "breakout",
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 270.5,
+        "pct_change": 6.71,
+        "rsi": 84.4,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+13.6%)",
+          "量增3.2x",
+          "爆量",
+          "超買RSI84",
+          "長線多頭"
+        ]
+      },
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 270.5,
+        "pct_change": 6.71,
+        "rsi": 84.4,
+        "descriptions": [
+          "創60日新高",
+          "量增3.2x",
+          "RSI84過熱",
+          "3日漲20.5%",
+          "波動擴張"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3152",
+    "name": "璟德",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 171.0,
+        "pct_change": -5.0,
+        "rsi": 55.8,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "20MA上升(+5.2%)",
+          "量增3.6x",
+          "爆量",
+          "動能區RSI56",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2449",
+    "name": "京元電子",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 302.5,
+        "pct_change": 6.7,
+        "rsi": 57.9,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "20MA上升(+0.9%)",
+          "量增2.5x",
+          "動能區RSI58",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2337",
+    "name": "旺宏",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 154.0,
+        "pct_change": -7.78,
+        "rsi": 57.6,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "20MA上升(+4.4%)",
+          "量增1.8x",
+          "動能區RSI58",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "5425",
+    "name": "台半",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 62.8,
+        "pct_change": -2.79,
+        "rsi": 55.8,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "20MA上升(+1.4%)",
+          "量增2.2x",
+          "動能區RSI56",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "6505",
+    "name": "台塑化",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 56.4,
+        "pct_change": 4.44,
+        "rsi": 57.1,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "量增1.6x",
+          "動能區RSI57",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "4991",
+    "name": "環宇-KY",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 676.0,
+        "pct_change": 9.92,
+        "rsi": 64.5,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+8.6%)",
+          "量增3.1x",
+          "爆量",
+          "動能區RSI64",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3006",
+    "name": "晶豪科",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 169.5,
+        "pct_change": -3.14,
+        "rsi": 52.8,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "20MA上升(+0.5%)",
+          "動能區RSI53",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2393",
+    "name": "億光",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 71.1,
+        "pct_change": -0.28,
+        "rsi": 55.5,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "20MA上升(+0.6%)",
+          "動能區RSI56",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2374",
+    "name": "佳能",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 78.4,
+        "pct_change": 4.53,
+        "rsi": 64.6,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+1.1%)",
+          "量增4.7x",
+          "爆量",
+          "動能區RSI65",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2359",
+    "name": "所羅門",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 119.0,
+        "pct_change": 3.93,
+        "rsi": 56.4,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "量增4.0x",
+          "爆量",
+          "動能區RSI56"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2426",
+    "name": "鼎元",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 5,
+        "close": 57.3,
+        "pct_change": -3.7,
+        "rsi": 66.5,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+10.8%)",
+          "量增3.3x",
+          "爆量",
+          "動能區RSI66",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "6147",
+    "name": "頎邦",
+    "strategies": [
+      "breakout"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "breakout",
+        "stars": 5,
+        "close": 163.0,
+        "pct_change": 3.16,
+        "rsi": 75.4,
+        "descriptions": [
+          "創60日新高",
+          "量增2.3x",
+          "RSI75",
+          "3日漲24.4%",
+          "波動擴張"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "4576",
+    "name": "大銀微系統",
+    "strategies": [
+      "breakout"
+    ],
+    "max_stars": 5,
+    "rows": [
+      {
+        "strategy": "breakout",
+        "stars": 5,
+        "close": 222.0,
+        "pct_change": 9.9,
+        "rsi": 77.5,
+        "descriptions": [
+          "創60日新高",
+          "量增2.3x",
+          "RSI78",
+          "3日漲22.7%",
+          "波動擴張"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3711",
+    "name": "日月光投控",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 478.0,
+        "pct_change": -2.15,
+        "rsi": 67.9,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+8.8%)",
+          "量增1.6x",
+          "動能區RSI68",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2303",
+    "name": "聯電",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 77.3,
+        "pct_change": 3.76,
+        "rsi": 66.4,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+6.7%)",
+          "量增1.7x",
+          "動能區RSI66",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "8299",
+    "name": "群聯",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 1900.0,
+        "pct_change": -8.21,
+        "rsi": 55.9,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+4.3%)",
+          "量增1.8x",
+          "動能區RSI56",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2301",
+    "name": "光寶科",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 166.0,
+        "pct_change": -3.49,
+        "rsi": 52.5,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+3.1%)",
+          "量增2.1x",
+          "動能區RSI53",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2059",
+    "name": "川湖",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 3910.0,
+        "pct_change": -6.01,
+        "rsi": 58.0,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+3.4%)",
+          "量增1.6x",
+          "動能區RSI58",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "1504",
+    "name": "東元",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 62.4,
+        "pct_change": 0.32,
+        "rsi": 45.3,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "量增2.7x",
+          "爆量"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2451",
+    "name": "創見",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 252.5,
+        "pct_change": -5.78,
+        "rsi": 50.8,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+2.6%)",
+          "量增1.8x",
+          "動能區RSI51",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2377",
+    "name": "微星",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 97.7,
+        "pct_change": -2.3,
+        "rsi": 58.4,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+2.1%)",
+          "量增1.5x",
+          "動能區RSI58",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3583",
+    "name": "辛耘",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 792.0,
+        "pct_change": 2.59,
+        "rsi": 64.5,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+11.3%)",
+          "量增1.7x",
+          "動能區RSI65",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "4583",
+    "name": "台灣精銳",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 764.0,
+        "pct_change": 4.51,
+        "rsi": 66.3,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+2.9%)",
+          "量增2.4x",
+          "動能區RSI66",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2455",
+    "name": "全新",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 347.5,
+        "pct_change": 9.97,
+        "rsi": 64.1,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+5.3%)",
+          "量增1.9x",
+          "動能區RSI64",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3026",
+    "name": "禾伸堂",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 212.5,
+        "pct_change": -9.96,
+        "rsi": 56.0,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+10.6%)",
+          "量增2.0x",
+          "動能區RSI56",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "4927",
+    "name": "泰鼎-KY",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 52.2,
+        "pct_change": -7.94,
+        "rsi": 55.2,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+7.5%)",
+          "量增1.7x",
+          "動能區RSI55",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "5386",
+    "name": "青雲",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 379.0,
+        "pct_change": 0.93,
+        "rsi": 58.4,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+6.5%)",
+          "量增1.8x",
+          "動能區RSI58",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3135",
+    "name": "凌航",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 141.5,
+        "pct_change": -2.08,
+        "rsi": 62.6,
+        "descriptions": [
+          "站上20MA",
+          "20MA上升(+5.9%)",
+          "量增1.5x",
+          "動能區RSI63",
+          "長線多頭"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "4743",
+    "name": "合一",
+    "strategies": [
+      "momentum"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "momentum",
+        "stars": 4,
+        "close": 53.2,
+        "pct_change": 2.7,
+        "rsi": 49.6,
+        "descriptions": [
+          "站上20MA",
+          "突破20MA",
+          "量增2.1x"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "5904",
+    "name": "寶雅",
+    "strategies": [
+      "breakout"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 575.0,
+        "pct_change": 3.23,
+        "rsi": 70.5,
+        "descriptions": [
+          "創60日新高",
+          "微量增2.0x",
+          "RSI70",
+          "3日漲10.2%",
+          "波動擴張"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "2464",
+    "name": "盟立",
+    "strategies": [
+      "breakout"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 113.5,
+        "pct_change": -0.87,
+        "rsi": 76.8,
+        "descriptions": [
+          "逼近60日高",
+          "微量增1.9x",
+          "RSI77",
+          "3日漲17.0%",
+          "波動擴張"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "1727",
+    "name": "中華化",
+    "strategies": [
+      "breakout"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 81.5,
+        "pct_change": -2.04,
+        "rsi": 79.3,
+        "descriptions": [
+          "接近60日高",
+          "量增2.0x",
+          "RSI79",
+          "3日漲10.4%",
+          "波動擴張"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "3037",
+    "name": "欣興",
+    "strategies": [
+      "breakout"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 883.0,
+        "pct_change": 9.96,
+        "rsi": 78.1,
+        "descriptions": [
+          "創60日新高",
+          "微量增1.6x",
+          "RSI78",
+          "3日漲5.2%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "8996",
+    "name": "高力",
+    "strategies": [
+      "breakout"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 1250.0,
+        "pct_change": 9.65,
+        "rsi": 64.7,
+        "descriptions": [
+          "創60日新高",
+          "RSI65未超買",
+          "3日漲16.8%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "6664",
+    "name": "群翊",
+    "strategies": [
+      "breakout"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 464.5,
+        "pct_change": 1.42,
+        "rsi": 75.6,
+        "descriptions": [
+          "創60日新高",
+          "微量增1.7x",
+          "RSI76",
+          "3日漲10.7%"
+        ]
+      }
+    ]
+  },
+  {
+    "code": "6672",
+    "name": "騰輝電子-KY",
+    "strategies": [
+      "breakout"
+    ],
+    "max_stars": 4,
+    "rows": [
+      {
+        "strategy": "breakout",
+        "stars": 4,
+        "close": 219.0,
+        "pct_change": 5.29,
+        "rsi": 80.0,
+        "descriptions": [
+          "創60日新高",
+          "微量增1.4x",
+          "RSI80",
+          "3日漲5.5%"
+        ]
+      }
+    ]
+  }
+]
