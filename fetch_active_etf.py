@@ -433,6 +433,160 @@ def diff_snapshots(etf_id: str, date_today: str, date_yesterday: str) -> dict | 
     }
 
 
+def compute_consensus_signal(
+    date_today: str,
+    date_yesterday: str,
+    min_pct_delta: float = 0.01,
+    min_abs_shares: int = 5_000,
+) -> dict:
+    """Cross-ETF consensus signal based on share-count delta (the truthful signal).
+
+    This is the ONLY correct way to detect "smart-money buy/sell" — weight_delta
+    is contaminated by stock price moves and AUM growth from inflows/redemptions.
+
+    A single ETF position counts as "moved" only if either:
+      - |Δshares / shares_yesterday| >= min_pct_delta (default 1%), OR
+      - shares_yesterday == 0 and |Δshares| >= min_abs_shares (new position), OR
+      - shares_today == 0 and |shares_yesterday| >= min_abs_shares (closed)
+
+    A stock is classified as:
+      - TRIPLE_BUY: ≥2 of 3 ETFs bought (Δshares > 0), 0 sold
+      - TRIPLE_SELL: ≥2 of 3 ETFs sold (Δshares < 0), 0 bought
+      - SINGLE_BUY: exactly 1 ETF bought, 0 sold
+      - SINGLE_SELL: exactly 1 ETF sold, 0 bought
+      - MIXED: at least 1 buy and 1 sell across ETFs (manager disagreement)
+    """
+    stock_data: dict[str, dict] = {}
+    snapshots: dict[str, dict] = {}
+
+    for etf_id in ACTIVE_ETFS:
+        snap_t = _load_snapshot(etf_id, date_today)
+        snap_y = _load_snapshot(etf_id, date_yesterday)
+        if snap_t is None or snap_y is None:
+            continue
+        snapshots[etf_id] = {"today": snap_t, "yday": snap_y}
+        by_y = {h["code"]: h for h in snap_y["holdings"]}
+        by_t = {h["code"]: h for h in snap_t["holdings"]}
+
+        for code in set(by_y.keys()) | set(by_t.keys()):
+            h_y = by_y.get(code)
+            h_t = by_t.get(code)
+            shares_y = (h_y or {}).get("shares", 0) or 0
+            shares_t = (h_t or {}).get("shares", 0) or 0
+            ds = shares_t - shares_y
+            if ds == 0:
+                continue
+
+            if shares_y == 0:  # new position
+                significant = abs(ds) >= min_abs_shares
+            elif shares_t == 0:  # closed
+                significant = abs(ds) >= min_abs_shares
+            else:
+                significant = abs(ds / shares_y) >= min_pct_delta
+            if not significant:
+                continue
+
+            name = (h_t or h_y or {}).get("name", "")
+            weight_y = (h_y or {}).get("weight", 0) or 0
+            weight_t = (h_t or {}).get("weight", 0) or 0
+            entry = stock_data.setdefault(code, {"name": name, "etfs": {}})
+            entry["etfs"][etf_id] = {
+                "shares_yday": shares_y,
+                "shares_today": shares_t,
+                "shares_delta": ds,
+                "weight_yday": weight_y,
+                "weight_today": weight_t,
+                "weight_delta": round(weight_t - weight_y, 4),
+                "pct_delta": round(ds / shares_y * 100, 2) if shares_y > 0 else None,
+            }
+
+    triple_buy: list[dict] = []
+    triple_sell: list[dict] = []
+    single_buy: list[dict] = []
+    single_sell: list[dict] = []
+    mixed: list[dict] = []
+
+    for code, info in stock_data.items():
+        buys = [eid for eid, d in info["etfs"].items() if d["shares_delta"] > 0]
+        sells = [eid for eid, d in info["etfs"].items() if d["shares_delta"] < 0]
+        total = sum(d["shares_delta"] for d in info["etfs"].values())
+        rec = {
+            "code": code,
+            "name": info["name"],
+            "etfs_buying": buys,
+            "etfs_selling": sells,
+            "total_shares_delta": total,
+            "etf_details": info["etfs"],
+        }
+        if len(buys) >= 2 and len(sells) == 0:
+            triple_buy.append(rec)
+        elif len(sells) >= 2 and len(buys) == 0:
+            triple_sell.append(rec)
+        elif len(buys) == 1 and len(sells) == 0:
+            single_buy.append(rec)
+        elif len(sells) == 1 and len(buys) == 0:
+            single_sell.append(rec)
+        else:
+            mixed.append(rec)
+
+    triple_buy.sort(key=lambda x: -x["total_shares_delta"])
+    triple_sell.sort(key=lambda x: x["total_shares_delta"])
+    single_buy.sort(key=lambda x: -x["total_shares_delta"])
+    single_sell.sort(key=lambda x: x["total_shares_delta"])
+    mixed.sort(key=lambda x: -abs(x["total_shares_delta"]))
+
+    return {
+        "date_today": date_today,
+        "date_yesterday": date_yesterday,
+        "TRIPLE_BUY": triple_buy,
+        "TRIPLE_SELL": triple_sell,
+        "SINGLE_BUY": single_buy,
+        "SINGLE_SELL": single_sell,
+        "MIXED": mixed,
+        "_thresholds": {"min_pct_delta": min_pct_delta, "min_abs_shares": min_abs_shares},
+    }
+
+
+def format_consensus_report(consensus: dict, top_n: int = 8) -> str:
+    """Render a human-readable summary block — used by daily report and console."""
+    out = []
+    d_t = consensus["date_today"]
+    d_y = consensus["date_yesterday"]
+    out.append(f"## ETF Smart-Money Consensus ({d_y} → {d_t}, share-delta basis)")
+    out.append("")
+    out.append("> Computed from raw holding share counts (the only truthful BUY/SELL signal).")
+    out.append("> weight_delta is shown for context but is NOT used for classification —")
+    out.append("> price moves and AUM swings dominate weight_delta and produce false signals.")
+    out.append("")
+
+    def render_list(label: str, items: list[dict], limit: int) -> None:
+        if not items:
+            out.append(f"### {label}: (none)")
+            out.append("")
+            return
+        out.append(f"### {label} (top {min(limit, len(items))})")
+        out.append("| Code | Name | ETFs | Total Δshares | Per-ETF detail |")
+        out.append("|------|------|------|--------------:|----------------|")
+        for r in items[:limit]:
+            etfs = "+".join(r["etfs_buying"] or r["etfs_selling"])
+            details = "; ".join(
+                f"{eid}: {d['shares_delta']:+,d} ({d['pct_delta']:+.1f}%)" if d["pct_delta"] is not None
+                else f"{eid}: {d['shares_delta']:+,d} (new/closed)"
+                for eid, d in r["etf_details"].items()
+            )
+            out.append(f"| {r['code']} | {r['name']} | {etfs} | {r['total_shares_delta']:+,d} | {details} |")
+        out.append("")
+
+    render_list("🟢 TRIPLE BUY (≥2 ETFs bought, 0 sold)", consensus["TRIPLE_BUY"], top_n)
+    render_list("🔴 TRIPLE SELL (≥2 ETFs sold, 0 bought)", consensus["TRIPLE_SELL"], top_n)
+    render_list("🟡 SINGLE BUY (1 ETF bought)", consensus["SINGLE_BUY"], top_n)
+    render_list("🟠 SINGLE SELL (1 ETF sold)", consensus["SINGLE_SELL"], top_n)
+    if consensus["MIXED"]:
+        out.append(f"### ⚪ MIXED (managers disagree): {len(consensus['MIXED'])} stocks")
+        out.append("")
+    return "\n".join(out)
+
+
 def diff_all_today() -> list[dict]:
     """For every ETF, diff today's snapshot against the most recent prior one."""
     diffs: list[dict] = []
@@ -500,7 +654,26 @@ if __name__ == "__main__":
 
     print()
     print("-" * 60)
-    print("Diff vs yesterday:")
+    print("Diff vs yesterday (per-ETF, shares-based classification):")
     diff_all_today()
+
+    # Cross-ETF share-delta consensus (the truthful BUY/SELL signal)
+    print()
+    print("-" * 60)
+    print("Cross-ETF consensus (shares-delta, AUM-immune):")
+    files = sorted(OUTPUT_DIR.glob("holdings_*.json"))
+    dates_seen: list[str] = []
+    for f in files:
+        m = re.search(r"holdings_(\d{4}-\d{2}-\d{2})_", f.name)
+        if m and m.group(1) not in dates_seen:
+            dates_seen.append(m.group(1))
+    dates_seen.sort()
+    if len(dates_seen) >= 2:
+        d_y, d_t = dates_seen[-2], dates_seen[-1]
+        consensus = compute_consensus_signal(d_t, d_y)
+        print(format_consensus_report(consensus))
+    else:
+        print("  (need ≥2 distinct snapshot dates)")
+
     print()
     print("Done.")
