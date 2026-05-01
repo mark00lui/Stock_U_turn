@@ -1,0 +1,12 @@
+{
+  "etf_id": "00980A",
+  "name": "野村智慧優選",
+  "issuer": "野村",
+  "disclose_date": null,
+  "fetched_at": "2026-05-01T19:33:58",
+  "nav": null,
+  "total_aum": null,
+  "holdings": [],
+  "source_url": "https://www.nomurafunds.com.tw/API/ETFAPI/api/Fund/GetFundAssets?FundID=00980A",
+  "source_format": "json"
+}

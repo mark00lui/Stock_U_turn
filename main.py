@@ -41,6 +41,13 @@ def _check_deps() -> None:
 
 
 def _validate_price_freshness(prices: dict, today_str: str, max_stale_pct: float = 10.0) -> None:
+    import os as _os
+    _override = _os.environ.get("CTA_MAX_STALE_PCT")
+    if _override is not None:
+        try:
+            max_stale_pct = float(_override)
+        except ValueError:
+            pass
     """Verify per-ticker last-bar date is recent enough.
 
     A ticker is "stale" if its last bar is older than today (or, on weekends,
