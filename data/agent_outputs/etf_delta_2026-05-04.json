@@ -1,0 +1,34 @@
+{
+  "date_today": "2026-05-04",
+  "date_yesterday": "2026-04-30",
+  "TRIPLE_BUY": [],
+  "TRIPLE_SELL": [],
+  "SINGLE_BUY": [
+    {
+      "code": "6187",
+      "name": "萬潤",
+      "etfs_buying": [
+        "00981A"
+      ],
+      "etfs_selling": [],
+      "total_shares_delta": 538000,
+      "etf_details": {
+        "00981A": {
+          "shares_yday": 684000,
+          "shares_today": 1222000,
+          "shares_delta": 538000,
+          "weight_yday": 0.35,
+          "weight_today": 0.64,
+          "weight_delta": 0.29,
+          "pct_delta": 78.65
+        }
+      }
+    }
+  ],
+  "SINGLE_SELL": [],
+  "MIXED": [],
+  "_thresholds": {
+    "min_pct_delta": 0.01,
+    "min_abs_shares": 5000
+  }
+}
