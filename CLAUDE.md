@@ -53,7 +53,8 @@ Each day at 10:07 the renewer fires and both crons get a fresh 7-day window. Res
 | Signal Analyst | Python | RSI/MACD indicators, reversal detection | (in JSON above) |
 | Revenue Analyst | LLM | Monthly revenue & earnings analysis | `data/agent_outputs/fundamentals.md` |
 | Industry Analyst | LLM | Sector trends, cycle positioning | `data/agent_outputs/industry.md` |
-| Chief Strategist | LLM | 3D synthesis (tech 40% + fundamental 30% + industry 30%) | `data/agent_outputs/strategy.md` |
+| Volatility Analyst | Python+LLM | 200d 1st/2nd derivative, Fibonacci time zones, damped oscillator → local min/max prediction (full universe) | `data/signals_volatility.json` + `data/agent_outputs/volatility.md` |
+| Chief Strategist | LLM | 3D synthesis (tech 40% + fundamental 30% + industry 30%) + 波動率拐點修正 | `data/agent_outputs/strategy.md` |
 | Trader | LLM | Trade plans, position sizing, risk control | `data/agent_outputs/trades.md` |
 
 ## Key Files
@@ -68,6 +69,9 @@ fetch_universe.py           — TWSE/TPEx stock list API
 fetch_prices.py             — yfinance batch download + cache
 indicators.py               — RSI & MACD calculation
 signals.py                  — reversal signal detection
+signals_momentum.py         — momentum breakout signal
+signals_breakout.py         — N-day high breakout signal
+signals_volatility.py       — 200d derivative + Fibonacci + damped oscillator (local max/min prediction)
 output/                     — generated HTML reports (tracked, for GitHub Pages)
 .claude/agents/cta-daily.md — orchestrator agent (runs full pipeline)
 .claude/agents/*.md         — 6 specialist agent definitions

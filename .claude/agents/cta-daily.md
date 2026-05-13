@@ -22,7 +22,12 @@ Architecture: **Serial Funnel** — the SAME stocks flow from signal scan throug
 
 ```bash
 cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python main.py --export
+cd E:/github/Stock_U_turn && PYTHONIOENCODING=utf-8 python signals_volatility.py --export
 ```
+
+The 2nd command scans the FULL liquidity-filtered universe (~380 stocks) with
+200-day derivative / Fibonacci / damped-oscillator pipeline, producing
+`data/signals_volatility.json`.
 
 Also ensure the agent output directory exists:
 ```bash
@@ -45,7 +50,11 @@ Write them to `E:/github/Stock_U_turn/data/agent_outputs/top_signals_today.txt` 
 
 ## Step 3: Parallel Validation (Funnel Stage 2)
 
-Spawn TWO agents in parallel. Both receive the SAME stock list from Step 2.
+Spawn THREE agents in parallel.
+- 3a (Revenue) and 3b (Industry) operate on the SAME signal stock list from Step 2.
+- 3c (Volatility) operates on the FULL liquidity-filtered universe (~380 stocks)
+  — this is an INDEPENDENT discovery channel for inflection points that the
+  RSI/MACD funnel may have missed.
 
 ### 3a: Revenue Analyst
 - Input: The signal stock list (10-20 stocks) from Step 2
@@ -63,17 +72,31 @@ Spawn TWO agents in parallel. Both receive the SAME stock list from Step 2.
   - Grades: A (expansion), B (recovery), C (trough), D (decline)
   - Brief sector overview (3-4 lines max)
 
+### 3c: Volatility Analyst
+- Input: `data/signals_volatility.json` (the full ~380-stock universe with
+  200-day 1st/2nd derivative, Fib time zones, damped oscillator fit, ensemble
+  prediction of next local min/max)
+- Task: Identify (i) Top-15 `BUY_NEAR_MIN` candidates (score ≥ 7,接近底部拐點)
+  and (ii) Top-10 `EXIT_NEAR_MAX` warnings (score ≤ 2,接近頂部拐點)
+- Output format: Write to `E:/github/Stock_U_turn/data/agent_outputs/volatility.md`
+  - See `.claude/agents/volatility-analyst.md` for the full template.
+
 ## Step 4: Chief Strategist (Funnel Stage 3)
 
-Read outputs from Step 3. Produce UNIFIED scoring for the SAME stocks.
+Read outputs from Step 3. Produce UNIFIED scoring.
 
-- Input: Signal list + fundamentals grades + industry grades
-- Scoring: Technical 40% + Fundamental 30% + Industry 30% → integrated score 0-100
+- Input: Signal list + fundamentals + industry + volatility (拐點修正)
+- Scoring: Technical 40% + Fundamental 30% + Industry 30% → 基礎分
+  - Volatility 修正:`BUY_NEAR_MIN` +10 / `WATCH` +0 / `NEUTRAL` -2 / `EXIT_NEAR_MAX` -15
+  - 最終分數 = 基礎分 + 拐點修正,封頂 100
+- ALSO consider promoting any `BUY_NEAR_MIN` stock from `volatility.md` that is
+  NOT in the original RSI/MACD signal list — add to a separate "波動率獨立發現"
+  Top-5 section so the trader can review.
 - Output format: Write to `E:/github/Stock_U_turn/data/agent_outputs/strategy.md`
-  - UNIFIED table: `| 代號 | 名稱 | 收盤 | 技術分 | 基本分 | 產業分 | 整合分 | 風險 | 建議 |`
+  - UNIFIED table: `| 代號 | 名稱 | 收盤 | 技術分 | 基本分 | 產業分 | 波動拐點 | 基礎分 | 修正 | 整合分 | 風險 | 建議 |`
   - Market outlook (3-4 lines)
-  - Risk warnings for D-grade stocks
-  - Top 5 final picks with brief rationale
+  - Risk warnings for D-grade stocks AND `EXIT_NEAR_MAX` stocks
+  - Top 5 final picks (含拐點來源說明) + Top 5 波動率獨立發現
 
 ## Step 5: Trader
 

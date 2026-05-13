@@ -352,6 +352,72 @@ def _sec_verification(p: list[str], verification: str) -> None:
     p.append("")
 
 
+# ── Section 5.5: Volatility / Inflection-Point Analysis ──
+
+def _sec_volatility(p: list[str]) -> None:
+    """Inject 波動率拐點分析 — derivatives + Fibonacci + damped oscillator.
+
+    Sources:
+      data/agent_outputs/volatility.md (LLM-curated narrative, preferred)
+      data/signals_volatility.json     (raw module output, fallback table)
+    """
+    vol_md = _read_md("volatility")
+    vol_json_path = DATA_DIR / "signals_volatility.json"
+
+    if not vol_md and not vol_json_path.exists():
+        return
+
+    p.append("## 5.5 波動率拐點分析（200日 一/二階導數 + 費氏時間區段 + 阻尼諧振）")
+    p.append("")
+    p.append("> 對全 ~380 檔流動性過濾後的優質股做 Savitzky-Golay 平滑 → ∇/∇² → 三方法 ensemble 預測 local min/max")
+    p.append("")
+
+    if vol_md:
+        p.append(_strip_heading(vol_md))
+    elif vol_json_path.exists():
+        try:
+            payload = json.loads(vol_json_path.read_text(encoding="utf-8"))
+            results = payload.get("results", [])
+            buys = [r for r in results if r.get("verdict") == "BUY_NEAR_MIN"][:15]
+            exits = [r for r in results if r.get("verdict") == "EXIT_NEAR_MAX"][:10]
+
+            p.append(f"**全市場波動概況**：{len(results)} 檔分析 · "
+                     f"BUY_NEAR_MIN {sum(1 for r in results if r.get('verdict')=='BUY_NEAR_MIN')} 檔 · "
+                     f"EXIT_NEAR_MAX {sum(1 for r in results if r.get('verdict')=='EXIT_NEAR_MAX')} 檔")
+            p.append("")
+
+            if buys:
+                p.append("### 接近 Local Min 進場候選 (Top 15)")
+                p.append("")
+                p.append("| 代號 | 名稱 | 收盤 | d₁ | d₂ | 狀態 | 距下次低點 | 距下次高點 | 阻尼週期 | 評分 |")
+                p.append("|------|------|------|----|----|------|-----------|-----------|---------|------|")
+                for r in buys:
+                    dm = r.get("damped") or {}
+                    period = f"{dm.get('period_days',0):.0f}d" if dm.get('period_days') else "—"
+                    p.append(f"| `{r['code']}` | {r['name']} | {r['close']:.1f} | "
+                             f"{r['d1']:+.3f} | {r['d2']:+.4f} | {r['regime']} | "
+                             f"{r.get('days_to_local_min') or '—'} | {r.get('days_to_local_max') or '—'} | "
+                             f"{period} | {r['score']:.1f} |")
+                p.append("")
+
+            if exits:
+                p.append("### 接近 Local Max 出場警示 (Top 10)")
+                p.append("")
+                p.append("| 代號 | 名稱 | 收盤 | d₁ | d₂ | 狀態 | 距下次高點 | 評分 |")
+                p.append("|------|------|------|----|----|------|-----------|------|")
+                for r in exits:
+                    p.append(f"| `{r['code']}` | {r['name']} | {r['close']:.1f} | "
+                             f"{r['d1']:+.3f} | {r['d2']:+.4f} | {r['regime']} | "
+                             f"{r.get('days_to_local_max') or '—'} | {r['score']:.1f} |")
+                p.append("")
+        except Exception as exc:
+            p.append(f"> ⚠️ 波動率 JSON 解析失敗：{exc}")
+            p.append("")
+
+    p.append("---")
+    p.append("")
+
+
 # ── Section 6: Trade Logs ────────────────────────────
 
 def _sec_trade_logs(p: list[str], all_bt: dict[str, dict | None]) -> None:
@@ -436,6 +502,7 @@ def generate(date_str: str) -> Path:
     p.append("| 3. 明日計畫 | 買入候選 + 出場警示 |")
     p.append("| 4. 績效儀表板 | 5 年回測統計 |")
     p.append("| 5. 量化驗證 | 統計顯著性檢定 |")
+    p.append("| 5.5 波動率拐點 | 200日 ∇/∇² + 費氏 + 阻尼諧振 |")
     p.append("| 6. 交易明細 | 完整進出場紀錄 |")
     p.append("")
     p.append("---")
@@ -447,6 +514,7 @@ def generate(date_str: str) -> Path:
     _sec_tomorrow(p, all_bt, all_signals)
     _sec_performance(p, all_bt)
     _sec_verification(p, verification)
+    _sec_volatility(p)
     _sec_trade_logs(p, all_bt)
 
     # Footer
